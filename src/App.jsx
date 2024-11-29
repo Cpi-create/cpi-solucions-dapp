@@ -1,7 +1,11 @@
 import React from "react";
 
-const App = () => {
-  return <h1>¡Hola desde React!</h1>;
-};
+function App() {
+  return (
+    <div>
+      <h1>¡Hola, este es mi DApp!</h1>
+    </div>
+  );
+}
 
 export default App;
