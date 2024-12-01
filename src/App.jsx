@@ -1,67 +1,20 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+const { ethers } = require("hardhat");
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+async function main() {
+    const adminAddress = "0xc29C9bd0BC978dFCAd34Be1AE66D8E785C152c55"; // Dirección de tu wallet
+    const usdcAddress = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"; // Dirección del contrato USDC en Polygon
 
-contract CPIFinancialToken is ERC20, ERC20Burnable, Ownable {
-    address public admin; // Dirección del administrador
-    mapping(address => uint256) public pendingUSDC; // USDC pendientes para cada tenedor
-    address public usdcAddress; // Dirección del contrato USDC en Polygon
+    console.log("Deploying CPIFinancialToken...");
+    const CPIFinancialToken = await ethers.getContractFactory("CPIFinancialToken");
+    const token = await CPIFinancialToken.deploy(adminAddress, usdcAddress);
 
-    event UtilityRegistered(address indexed from, uint256 amount);
-    event USDCDistributed(uint256 totalAmount);
+    console.log("Awaiting deployment...");
+    await token.deployed();
 
-    constructor(
-        string memory name,
-        string memory symbol,
-        uint256 initialSupply,
-        address _admin,
-        address _usdcAddress
-    ) ERC20(name, symbol) {
-        _mint(msg.sender, initialSupply * 10 ** decimals());
-        admin = _admin;
-        usdcAddress = _usdcAddress;
-    }
-
-    // Función para registrar utilidades (solo admin)
-    function registerUtility(uint256 amount) external onlyOwner {
-        uint256 totalTokens = totalSupply();
-        require(totalTokens > 0, "No tokens in circulation");
-
-        uint256 perTokenShare = amount / totalTokens;
-
-        for (uint256 i = 0; i < holders.length; i++) {
-            address holder = holders[i];
-            uint256 balance = balanceOf(holder);
-            pendingUSDC[holder] += balance * perTokenShare;
-        }
-
-        emit UtilityRegistered(msg.sender, amount);
-    }
-
-    // Función para que los tenedores reclamen sus USDC
-    function claimUSDC() external {
-        uint256 amount = pendingUSDC[msg.sender];
-        require(amount > 0, "No USDC to claim");
-
-        pendingUSDC[msg.sender] = 0;
-        IERC20(usdcAddress).transfer(msg.sender, amount);
-    }
-
-    // Solo admin: distribuir USDC automáticamente a los tenedores
-    function distributeUSDC(uint256 amount) external onlyOwner {
-        uint256 totalTokens = totalSupply();
-        require(totalTokens > 0, "No tokens in circulation");
-        uint256 perTokenShare = amount / totalTokens;
-
-        for (uint256 i = 0; i < holders.length; i++) {
-            address holder = holders[i];
-            uint256 balance = balanceOf(holder);
-            pendingUSDC[holder] += balance * perTokenShare;
-        }
-
-        emit USDCDistributed(amount);
-    }
+    console.log("CPIFinancialToken deployed to:", token.address);
 }
+
+main().catch((error) => {
+    console.error("Error al desplegar el contrato:", error);
+    process.exitCode = 1;
+});
