@@ -1,64 +1,28 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+const { ethers } = require("hardhat");
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+async function main() {
+    // Mostrar la URL de la RPC para depuración
+    console.log("RPC URL:", process.env.ALCHEMY_API_KEY);
 
-contract CPIFinancialToken is ERC20, Ownable {
-    address public adminAddress; // Dirección del administrador
-    address public usdcAddress;  // Dirección del contrato USDC en Polygon
+    // Dirección del contrato USDC de Polygon
+    const usdcAddress = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
 
-    // Constructor
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint256 _initialSupply,
-        address _adminAddress,
-        address _usdcAddress
-    ) ERC20(_name, _symbol) {
-        require(_adminAddress != address(0), "Dirección del administrador inválida");
-        require(_usdcAddress != address(0), "Dirección de USDC inválida");
+    // Suministro inicial del token (1 millón con 18 decimales)
+    const initialSupply = ethers.parseUnits("1000000", 18);
 
-        adminAddress = _adminAddress;
-        usdcAddress = _usdcAddress;
+    // Desplegar el contrato CPIFinancialToken
+    console.log("Desplegando contrato CPIFinancialToken...");
+    const CPIFinancialToken = await ethers.getContractFactory("CPIFinancialToken");
+    const token = await CPIFinancialToken.deploy(initialSupply, usdcAddress);
 
-        // Mintea los tokens iniciales al administrador
-        _mint(_adminAddress, _initialSupply);
-    }
+    console.log("Esperando a que el despliegue se complete...");
+    await token.waitForDeployment();
 
-    // Función para transferir USDC a los holders en función de sus balances de tokens
-    function distributeUSDC() external onlyOwner {
-        uint256 totalSupply = totalSupply();
-        require(totalSupply > 0, "No hay tokens en circulación");
-
-        IERC20 usdcToken = IERC20(usdcAddress);
-        uint256 usdcBalance = usdcToken.balanceOf(address(this));
-        require(usdcBalance > 0, "No hay USDC disponible para distribución");
-
-        // Reparte el USDC proporcionalmente a los holders de tokens
-        address[] memory holders = getAllTokenHolders();
-        for (uint256 i = 0; i < holders.length; i++) {
-            address holder = holders[i];
-            uint256 holderBalance = balanceOf(holder);
-            uint256 amountToSend = (holderBalance * usdcBalance) / totalSupply;
-
-            if (amountToSend > 0) {
-                usdcToken.transfer(holder, amountToSend);
-            }
-        }
-    }
-
-    // Función para obtener todas las direcciones que poseen tokens
-    // Nota: Esto requiere tener una lista de holders actualizada fuera del contrato
-    function getAllTokenHolders() private view returns (address[] memory) {
-        // Aquí debes implementar un mecanismo para rastrear a los holders
-        // como un registro fuera del contrato
-        revert("No implementado");
-    }
-
-    // Función para actualizar la dirección de USDC si cambia en el futuro
-    function updateUSDCAddress(address _newUSDCAddress) external onlyOwner {
-        require(_newUSDCAddress != address(0), "Dirección de USDC inválida");
-        usdcAddress = _newUSDCAddress;
-    }
+    // Dirección del contrato desplegado
+    console.log("Contrato CPIFinancialToken desplegado en:", await token.getAddress());
 }
+
+main().catch((error) => {
+    console.error("Error al desplegar el contrato:", error);
+    process.exitCode = 1;
+});
