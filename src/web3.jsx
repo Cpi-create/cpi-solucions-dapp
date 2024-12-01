@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-// Dirección del contrato desplegado (actualízala si cambia)
+// Dirección del contrato desplegado
 const contractAddress = "0x1658d712Fea00F25210A3881d87Dc61F4C1016ba";
 
 // ABI del contrato (fragmento de funciones relevantes)
@@ -36,15 +36,18 @@ const contractABI = [
 ];
 
 // Configurar el proveedor y contrato
-export const getContract = () => {
+let provider;
+let contract;
+
+export const initializeWeb3 = async () => {
   if (!window.ethereum) {
     alert("Metamask no está instalado. Por favor, instálalo para continuar.");
     return null;
   }
 
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const signer = provider.getSigner();
-  return new ethers.Contract(contractAddress, contractABI, signer);
+  provider = new ethers.BrowserProvider(window.ethereum);
+  contract = new ethers.Contract(contractAddress, contractABI, provider);
+  return contract;
 };
 
 // Conectar Metamask
@@ -69,9 +72,7 @@ export const connectWallet = async () => {
 // Obtener el balance de tokens de un usuario
 export const getTokenBalance = async (account) => {
   try {
-    const contract = getContract();
-    if (!contract) return;
-
+    if (!contract) await initializeWeb3();
     const balance = await contract.balanceOf(account);
     console.log("Balance de tokens:", balance.toString());
     return balance;
@@ -83,9 +84,7 @@ export const getTokenBalance = async (account) => {
 // Obtener el suministro total de tokens
 export const getTotalSupply = async () => {
   try {
-    const contract = getContract();
-    if (!contract) return;
-
+    if (!contract) await initializeWeb3();
     const totalSupply = await contract.totalSupply();
     console.log("Suministro total:", totalSupply.toString());
     return totalSupply;
