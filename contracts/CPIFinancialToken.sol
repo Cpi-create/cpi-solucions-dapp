@@ -9,10 +9,11 @@ contract CPIFinancialToken is ERC20, ERC20Burnable, Ownable {
     address public usdcAddress; // Dirección del contrato USDC en Polygon
     uint256 public constant DECIMALS = 18;
 
-    constructor(address _usdcAddress) ERC20("CPIFinancialToken", "CPI") {
+    constructor(address _usdcAddress, address initialOwner) ERC20("CPIFinancialToken", "CPI") Ownable(initialOwner) {
         require(_usdcAddress != address(0), "USDC address cannot be zero");
+        require(initialOwner != address(0), "Owner address cannot be zero");
         usdcAddress = _usdcAddress;
-        _mint(msg.sender, 1_000_000 * (10 ** DECIMALS)); // 1 millón de tokens iniciales
+        _mint(initialOwner, 1_000_000 * (10 ** DECIMALS)); // 1 millón de tokens iniciales
     }
 
     function setUSDCAddress(address _usdcAddress) external onlyOwner {
