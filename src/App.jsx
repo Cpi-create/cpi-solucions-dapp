@@ -2,65 +2,43 @@ import React, { useState } from "react";
 import { connectWallet, getTokenBalance, getTotalSupply } from "./web3";
 
 function App() {
-  const [account, setAccount] = useState(null);
+  const [connectedAccount, setConnectedAccount] = useState(null);
   const [balance, setBalance] = useState(null);
   const [totalSupply, setTotalSupply] = useState(null);
 
-  // Conectar MetaMask
   const handleConnectWallet = async () => {
-    const connectedAccount = await connectWallet();
-    if (connectedAccount) {
-      setAccount(connectedAccount);
-      fetchBalance(connectedAccount);
-      fetchTotalSupply();
+    const account = await connectWallet();
+    setConnectedAccount(account);
+
+    if (account) {
+      const rawBalance = await getTokenBalance(account);
+      const readableBalance = rawBalance / 10 ** 18; // Suponiendo 18 decimales
+      setBalance(readableBalance);
+
+      const rawTotalSupply = await getTotalSupply();
+      const readableTotalSupply = rawTotalSupply / 10 ** 18; // Suponiendo 18 decimales
+      setTotalSupply(readableTotalSupply);
     }
   };
 
-  // Obtener balance del usuario
-  const fetchBalance = async (account) => {
-    const userBalance = await getTokenBalance(account);
-    setBalance(userBalance.toString());
-  };
-
-  // Obtener suministro total
-  const fetchTotalSupply = async () => {
-    const supply = await getTotalSupply();
-    setTotalSupply(supply.toString());
-  };
-
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+    <div>
       <h1>¡Hola, Mundo!</h1>
       <p>Conecta tu wallet para interactuar con el contrato.</p>
-
-      {!account ? (
-        <button
-          onClick={handleConnectWallet}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Conectar Wallet
-        </button>
+      {connectedAccount ? (
+        <>
+          <p>
+            <strong>Cuenta conectada:</strong> {connectedAccount}
+          </p>
+          <p>
+            <strong>Balance de tokens:</strong> {balance || "Cargando..."} CPI
+          </p>
+          <p>
+            <strong>Suministro total:</strong> {totalSupply || "Cargando..."} CPI
+          </p>
+        </>
       ) : (
-        <div>
-          <p>
-            <strong>Cuenta conectada:</strong> {account}
-          </p>
-          <p>
-            <strong>Balance de tokens:</strong>{" "}
-            {balance !== null ? `${balance} CPI` : "Cargando..."}
-          </p>
-          <p>
-            <strong>Suministro total:</strong>{" "}
-            {totalSupply !== null ? `${totalSupply} CPI` : "Cargando..."}
-          </p>
-        </div>
+        <button onClick={handleConnectWallet}>Conectar Wallet</button>
       )}
     </div>
   );
