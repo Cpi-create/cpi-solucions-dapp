@@ -1,20 +1,45 @@
-const { ethers } = require("hardhat");
+import React, { useEffect, useState } from "react";
+import { connectWallet, getTokenBalance, getTotalSupply } from "./web3";
 
-async function main() {
-    const adminAddress = "0xc29C9bd0BC978dFCAd34Be1AE66D8E785C152c55"; // Dirección de tu wallet
-    const usdcAddress = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"; // Dirección del contrato USDC en Polygon
+function App() {
+    const [connectedAccount, setConnectedAccount] = useState(null);
+    const [tokenBalance, setTokenBalance] = useState("Cargando...");
+    const [totalSupply, setTotalSupply] = useState("Cargando...");
 
-    console.log("Deploying CPIFinancialToken...");
-    const CPIFinancialToken = await ethers.getContractFactory("CPIFinancialToken");
-    const token = await CPIFinancialToken.deploy(adminAddress, usdcAddress);
+    useEffect(() => {
+        async function fetchData() {
+            const account = await connectWallet();
+            setConnectedAccount(account);
 
-    console.log("Awaiting deployment...");
-    await token.deployed();
+            if (account) {
+                const balance = await getTokenBalance(account);
+                setTokenBalance(balance ? `${balance} CPI` : "No disponible");
 
-    console.log("CPIFinancialToken deployed to:", token.address);
+                const supply = await getTotalSupply();
+                setTotalSupply(supply ? `${supply} CPI` : "No disponible");
+            }
+        }
+
+        fetchData();
+    }, []);
+
+    return (
+        <div style={{ textAlign: "center", margin: "2rem" }}>
+            <h1>Solución CPI</h1>
+            <p>Tu portal para interactuar con contratos inteligentes de blockchain.</p>
+            <div style={{ border: "1px solid #ccc", padding: "1rem", borderRadius: "8px", display: "inline-block" }}>
+                <p>
+                    <strong>Cuenta conectada:</strong> {connectedAccount || "Conecta tu wallet"}
+                </p>
+                <p>
+                    <strong>Balance de tokens:</strong> {tokenBalance}
+                </p>
+                <p>
+                    <strong>Suministro total:</strong> {totalSupply}
+                </p>
+            </div>
+        </div>
+    );
 }
 
-main().catch((error) => {
-    console.error("Error al desplegar el contrato:", error);
-    process.exitCode = 1;
-});
+export default App;
