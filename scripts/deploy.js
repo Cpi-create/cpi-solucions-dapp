@@ -1,28 +1,21 @@
-const { ethers } = require("hardhat");
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
-async function main() {
-    // Mostrar la URL de la RPC para depuración
-    console.log("RPC URL:", process.env.ALCHEMY_API_KEY);
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-    // Dirección del contrato USDC de Polygon
-    const usdcAddress = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
+contract CPIFinancialToken is ERC20 {
+    address public admin;
+    address public usdcToken;
 
-    // Suministro inicial del token (1 millón con 18 decimales)
-    const initialSupply = ethers.parseUnits("1000000", 18);
+    constructor(address adminAddress, address usdcAddress) ERC20("CPIFinancialToken", "CPI") {
+        admin = adminAddress;
+        usdcToken = usdcAddress;
+        _mint(adminAddress, 1000000 * (10 ** decimals()));
+    }
 
-    // Desplegar el contrato CPIFinancialToken
-    console.log("Desplegando contrato CPIFinancialToken...");
-    const CPIFinancialToken = await ethers.getContractFactory("CPIFinancialToken");
-    const token = await CPIFinancialToken.deploy(initialSupply, usdcAddress);
-
-    console.log("Esperando a que el despliegue se complete...");
-    await token.waitForDeployment();
-
-    // Dirección del contrato desplegado
-    console.log("Contrato CPIFinancialToken desplegado en:", await token.getAddress());
+    // Función para actualizar el contrato USDC
+    function updateUsdcAddress(address newAddress) external {
+        require(msg.sender == admin, "Solo el administrador puede actualizar el contrato USDC.");
+        usdcToken = newAddress;
+    }
 }
-
-main().catch((error) => {
-    console.error("Error al desplegar el contrato:", error);
-    process.exitCode = 1;
-});
