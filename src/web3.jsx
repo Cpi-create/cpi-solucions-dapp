@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
 // Dirección del contrato desplegado
-const contractAddress = "0x1658d712Fea00F25210A3881d87Dc61F4C1016ba";
+const contractAddress = "0x784Ee17d563f055d3287D285155D9a9bfdaceDE5";
 
 // ABI del contrato (fragmento de funciones relevantes)
 const contractABI = [
