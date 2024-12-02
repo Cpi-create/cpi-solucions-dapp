@@ -2,33 +2,52 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract CPIFinancialToken is ERC20, ERC20Burnable, Ownable {
-    address public usdcAddress; // Dirección del contrato USDC en Polygon
-    uint256 public constant DECIMALS = 18;
+contract CPIFinancialToken is ERC20, Ownable {
+    address public usdcToken;
 
-    constructor(address _usdcAddress, address initialOwner) ERC20("CPIFinancialToken", "CPI") Ownable(initialOwner) {
-        require(_usdcAddress != address(0), "USDC address cannot be zero");
-        require(initialOwner != address(0), "Owner address cannot be zero");
-        usdcAddress = _usdcAddress;
-        _mint(initialOwner, 1_000_000 * (10 ** DECIMALS)); // 1 millón de tokens iniciales
+    constructor(
+        string memory name,
+        string memory symbol,
+        address admin,
+        address _usdcToken
+    ) ERC20(name, symbol) {
+        transferOwnership(admin);
+        usdcToken = _usdcToken;
+        _mint(admin, 1_000_000 * 10 ** decimals());
     }
+}
 
-    function setUSDCAddress(address _usdcAddress) external onlyOwner {
-        require(_usdcAddress != address(0), "USDC address cannot be zero");
-        usdcAddress = _usdcAddress;
-    }
+contract CPIFinancialFactory {
+    address[] public createdTokens;
 
-    function payDividends(address recipient, uint256 amount) external onlyOwner {
-        require(recipient != address(0), "Recipient cannot be zero address");
-        require(
-            IERC20(usdcAddress).balanceOf(address(this)) >= amount,
-            "Not enough USDC balance"
+    event TokenCreated(
+        address indexed tokenAddress,
+        string name,
+        string symbol,
+        address admin
+    );
+
+    function createToken(
+        string memory name,
+        string memory symbol,
+        address admin,
+        address usdcToken
+    ) external returns (address) {
+        CPIFinancialToken newToken = new CPIFinancialToken(
+            name,
+            symbol,
+            admin,
+            usdcToken
         );
+        createdTokens.push(address(newToken));
 
-        bool success = IERC20(usdcAddress).transfer(recipient, amount);
-        require(success, "USDC transfer failed");
+        emit TokenCreated(address(newToken), name, symbol, admin);
+        return address(newToken);
+    }
+
+    function getCreatedTokens() external view returns (address[] memory) {
+        return createdTokens;
     }
 }
