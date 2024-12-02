@@ -1,87 +1,68 @@
 import { ethers } from "ethers";
 
-// Dirección del contrato y ABI (actualiza con los valores de tu contrato)
-const contractAddress = "0x784Ee17d563f055d3287D285155D9a9bfdaceDE5";
-const contractABI = [
+// Dirección del contrato de la fábrica (actualiza esta dirección con la que hayas desplegado)
+const factoryAddress = "0x7faDdAFeDC0eFC895bb09bAF1e7146f73a961E9b";
+const factoryABI = [
   {
-    inputs: [{ internalType: "address", name: "account", type: "address" }],
-    name: "balanceOf",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
+    inputs: [
+      { internalType: "string", name: "name", type: "string" },
+      { internalType: "string", name: "symbol", type: "string" },
+      { internalType: "address", name: "admin", type: "address" },
+      { internalType: "address", name: "usdcToken", type: "address" },
+    ],
+    name: "createToken",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [],
-    name: "totalSupply",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "getCreatedTokens",
+    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "to", type: "address" }, { internalType: "uint256", name: "amount", type: "uint256" }],
-    name: "transfer",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "nonpayable",
     type: "function",
   },
 ];
 
-// Obtener el contrato configurado
-const getContract = async () => {
+// Configurar proveedor y contrato
+const getFactoryContract = async () => {
   const provider = new ethers.BrowserProvider(window.ethereum);
   const signer = await provider.getSigner();
-  return new ethers.Contract(contractAddress, contractABI, signer);
+  return new ethers.Contract(factoryAddress, factoryABI, signer);
 };
 
-// Conectar la wallet
+// Conectar wallet
 export const connectWallet = async () => {
   try {
-    if (!window.ethereum) {
-      throw new Error("MetaMask no está instalado");
-    }
+    if (!window.ethereum) throw new Error("MetaMask no está instalado");
     const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
     return accounts[0];
   } catch (error) {
     console.error("Error al conectar la wallet:", error);
-    throw error;
+    return null;
   }
 };
 
-// Obtener balance de tokens
-export const getTokenBalance = async (address) => {
+// Crear un nuevo token
+export const createToken = async (name, symbol, admin, usdcAddress) => {
   try {
-    const contract = await getContract();
-    const balance = await contract.balanceOf(address);
-    return balance;
+    const factoryContract = await getFactoryContract();
+    const tx = await factoryContract.createToken(name, symbol, admin, usdcAddress);
+    await tx.wait(); // Espera a que se confirme la transacción
+    return tx.hash; // Devuelve el hash de la transacción
   } catch (error) {
-    console.error("Error al obtener el balance de tokens:", error);
-    throw error;
+    console.error("Error al crear el token:", error);
+    return null;
   }
 };
 
-// Obtener suministro total de tokens
-export const getTotalSupply = async () => {
+// Obtener la lista de tokens creados
+export const getCreatedTokens = async () => {
   try {
-    const contract = await getContract();
-    const totalSupply = await contract.totalSupply();
-    return totalSupply;
+    const factoryContract = await getFactoryContract();
+    return await factoryContract.getCreatedTokens();
   } catch (error) {
-    console.error("Error al obtener el suministro total:", error);
-    throw error;
-  }
-};
-
-// Transferir tokens
-export const transferTokens = async (toAddress, amount) => {
-  try {
-    const contract = await getContract();
-    const amountInWei = ethers.parseUnits(amount.toString(), 18);
-    const tx = await contract.transfer(toAddress, amountInWei);
-    await tx.wait();
-    console.log(`Tokens transferidos: ${amount} a ${toAddress}`);
-    return tx;
-  } catch (error) {
-    console.error("Error al transferir tokens:", error);
-    throw error;
+    console.error("Error al obtener los tokens creados:", error);
+    return [];
   }
 };
