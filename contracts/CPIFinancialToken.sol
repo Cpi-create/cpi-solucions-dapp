@@ -15,7 +15,7 @@ contract CPIFinancialToken is ERC20, Ownable {
     ) ERC20(name, symbol) {
         transferOwnership(admin);
         usdcToken = _usdcToken;
-        _mint(admin, 1_000_000 * 10 ** decimals());
+        _mint(admin, 1_000_000 * 10 ** decimals()); // Inicializa con 1 millón de tokens
     }
 }
 
