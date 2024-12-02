@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-// Dirección del contrato y ABI
+// Dirección del contrato Factory y ABI
 const factoryAddress = "0x7faDdAFeDC0eFC895bb09bAF1e7146f73a961E9b"; // Dirección del contrato Factory
 const factoryABI = [
   {
@@ -14,6 +14,13 @@ const factoryABI = [
     "name": "createToken",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCreatedTokens",
+    "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }],
+    "stateMutability": "view",
     "type": "function"
   }
 ];
@@ -31,5 +38,18 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
   } catch (error) {
     console.error("Error al crear el token:", error);
     throw error;
+  }
+};
+
+export const getCreatedTokens = async () => {
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
+
+    const tokens = await factoryContract.getCreatedTokens();
+    return tokens; // Devuelve la lista de direcciones de los tokens creados
+  } catch (error) {
+    console.error("Error al obtener los tokens creados:", error);
+    return [];
   }
 };
