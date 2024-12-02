@@ -10,10 +10,7 @@ async function main() {
     const CPIFinancialToken = await ethers.getContractFactory("CPIFinancialToken");
     const token = await CPIFinancialToken.deploy(name, symbol, admin, usdcToken);
 
-    console.log("Awaiting deployment...");
-    await token.deployed();
-
-    console.log("CPIFinancialToken deployed to:", token.address);
+    console.log(`CPIFinancialToken deployed to: ${token.target}`);
 }
 
 main().catch((error) => {
