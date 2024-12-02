@@ -12,11 +12,10 @@ contract CPIFinancialToken is ERC20, Ownable {
         string memory symbol,
         address admin,
         address _usdcToken
-    ) ERC20(name, symbol) Ownable() {
+    ) ERC20(name, symbol) Ownable(admin) {
         require(admin != address(0), "Admin address cannot be zero");
         require(_usdcToken != address(0), "USDC token address cannot be zero");
 
-        transferOwnership(admin); // Establece la dirección del administrador
         usdcToken = _usdcToken;   // Guarda la dirección del contrato USDC
         _mint(admin, 1_000_000 * 10 ** decimals()); // Crea tokens iniciales
     }
