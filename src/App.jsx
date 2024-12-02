@@ -8,16 +8,29 @@ function App() {
 
   useEffect(() => {
     async function fetchData() {
-      const connectedAccount = await connectWallet();
-      setAccount(connectedAccount);
+      try {
+        // Conectar la wallet
+        const connectedAccount = await connectWallet();
+        setAccount(connectedAccount);
 
-      if (connectedAccount) {
-        const balance = await getTokenBalance(connectedAccount);
-        const supply = await getTotalSupply();
-        setBalance(balance / 1e18); // Convertimos de wei a formato decimal
-        setTotalSupply(supply / 1e18); // Convertimos de wei a formato decimal
+        if (connectedAccount) {
+          // Obtener el balance y el suministro total del contrato
+          const balanceRaw = await getTokenBalance(connectedAccount);
+          const supplyRaw = await getTotalSupply();
+
+          // Convertir BigInt a string y luego a formato decimal
+          const balance = (BigInt(balanceRaw).toString() / 1e18).toFixed(6);
+          const totalSupply = (BigInt(supplyRaw).toString() / 1e18).toFixed(6);
+
+          // Actualizar los estados
+          setBalance(balance);
+          setTotalSupply(totalSupply);
+        }
+      } catch (error) {
+        console.error("Error al obtener los datos del contrato:", error);
       }
     }
+
     fetchData();
   }, []);
 
