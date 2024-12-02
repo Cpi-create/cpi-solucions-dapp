@@ -11,12 +11,14 @@ contract CPIFinancialToken is ERC20, Ownable {
         string memory name,
         string memory symbol,
         address admin,
-        address _usdcToken,
-        uint256 initialSupply
-    ) ERC20(name, symbol) {
-        transferOwnership(admin);
-        usdcToken = _usdcToken;
-        _mint(admin, initialSupply * 10 ** decimals());
+        address _usdcToken
+    ) ERC20(name, symbol) Ownable() {
+        require(admin != address(0), "Admin address cannot be zero");
+        require(_usdcToken != address(0), "USDC token address cannot be zero");
+
+        transferOwnership(admin); // Establece la dirección del administrador
+        usdcToken = _usdcToken;   // Guarda la dirección del contrato USDC
+        _mint(admin, 1_000_000 * 10 ** decimals()); // Crea tokens iniciales
     }
 }
 
@@ -27,27 +29,24 @@ contract CPIFinancialFactory {
         address indexed tokenAddress,
         string name,
         string symbol,
-        address admin,
-        uint256 initialSupply
+        address admin
     );
 
     function createToken(
         string memory name,
         string memory symbol,
         address admin,
-        address usdcToken,
-        uint256 initialSupply
+        address usdcToken
     ) external returns (address) {
         CPIFinancialToken newToken = new CPIFinancialToken(
             name,
             symbol,
             admin,
-            usdcToken,
-            initialSupply
+            usdcToken
         );
         createdTokens.push(address(newToken));
 
-        emit TokenCreated(address(newToken), name, symbol, admin, initialSupply);
+        emit TokenCreated(address(newToken), name, symbol, admin);
         return address(newToken);
     }
 
