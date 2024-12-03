@@ -3,21 +3,67 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
-contract CPIFinancialToken is ERC20, Ownable {
+interface IUniswapV3Pool {
+    function mint(
+        address recipient,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 amount,
+        bytes calldata data
+    ) external returns (uint256, uint256);
+}
+
+contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
     address public usdcToken;
+    uint256 public lastIncomeDistribution;
+    uint256 public dailyIncome;
+
+    mapping(address => uint256) public rewards;
 
     constructor(
         string memory name,
         string memory symbol,
         address admin,
-        address _usdcToken
-    ) ERC20(name, symbol) Ownable(admin) {
-        require(admin != address(0), "Admin address cannot be zero");
-        require(_usdcToken != address(0), "USDC token address cannot be zero");
+        address _usdcToken,
+        uint256 initialSupply
+    ) ERC20(name, symbol) {
+        transferOwnership(admin);
+        usdcToken = _usdcToken;
+        _mint(admin, initialSupply * 10 ** decimals());
+    }
 
-        usdcToken = _usdcToken;   // Guarda la dirección del contrato USDC
-        _mint(admin, 1_000_000 * 10 ** decimals()); // Crea tokens iniciales
+    function setUsdcToken(address _usdcToken) external onlyOwner {
+        usdcToken = _usdcToken;
+    }
+
+    function depositIncome(uint256 amount) external {
+        IERC20(usdcToken).transferFrom(msg.sender, address(this), amount);
+        dailyIncome = amount / 30;
+        lastIncomeDistribution = block.timestamp;
+    }
+
+    function performUpkeep(bytes calldata) external override {
+        require(block.timestamp > lastIncomeDistribution + 1 days, "Ya distribuido hoy");
+
+        uint256 balance = IERC20(usdcToken).balanceOf(address(this));
+        require(balance >= dailyIncome, "No hay suficiente USDC");
+
+        address[] memory holders = getTokenHolders();
+        for (uint256 i = 0; i < holders.length; i++) {
+            uint256 reward = (balanceOf(holders[i]) * dailyIncome) / totalSupply();
+            IERC20(usdcToken).transfer(holders[i], reward);
+            rewards[holders[i]] += reward;
+        }
+
+        lastIncomeDistribution = block.timestamp;
+    }
+
+    function getTokenHolders() internal view returns (address[] memory) {
+        address;
+        holders[0] = owner();
+        return holders;
     }
 }
 
@@ -35,13 +81,15 @@ contract CPIFinancialFactory {
         string memory name,
         string memory symbol,
         address admin,
-        address usdcToken
+        address usdcToken,
+        uint256 initialSupply
     ) external returns (address) {
         CPIFinancialToken newToken = new CPIFinancialToken(
             name,
             symbol,
             admin,
-            usdcToken
+            usdcToken,
+            initialSupply
         );
         createdTokens.push(address(newToken));
 
