@@ -3,17 +3,7 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
-
-interface IUniswapV3Pool {
-    function mint(
-        address recipient,
-        int24 tickLower,
-        int24 tickUpper,
-        uint128 amount,
-        bytes calldata data
-    ) external returns (uint256, uint256);
-}
+import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
 contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
     address public usdcToken;
@@ -21,7 +11,6 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
     uint256 public dailyIncome;
 
     mapping(address => uint256) public rewards;
-    mapping(address => bool) private tokenHolders;
 
     constructor(
         string memory name,
@@ -29,11 +18,9 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         address admin,
         address _usdcToken,
         uint256 initialSupply
-    ) ERC20(name, symbol) {
-        transferOwnership(admin);
+    ) ERC20(name, symbol) Ownable(admin) {
         usdcToken = _usdcToken;
         _mint(admin, initialSupply * 10 ** decimals());
-        tokenHolders[admin] = true; // Registrar al admin como titular inicial
     }
 
     function setUsdcToken(address _usdcToken) external onlyOwner {
@@ -62,19 +49,16 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         lastIncomeDistribution = block.timestamp;
     }
 
-    function getTokenHolders() internal view returns (address[] memory) {
-        uint256 count = 0;
-        address[] memory holders = new address[](count); // Cambiar en implementación futura
-        holders[0] = owner(); // Por ahora, devolver solo el propietario
-        return holders;
+    function checkUpkeep(bytes calldata) external view override returns (bool upkeepNeeded, bytes memory performData) {
+        upkeepNeeded = block.timestamp > lastIncomeDistribution + 1 days &&
+                       IERC20(usdcToken).balanceOf(address(this)) >= dailyIncome;
+        performData = "";
     }
 
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
-        bool success = super.transfer(recipient, amount);
-        if (success) {
-            tokenHolders[recipient] = true; // Registrar al receptor como titular
-        }
-        return success;
+    function getTokenHolders() internal view returns (address[] memory) {
+        address;
+        holders[0] = owner();
+        return holders;
     }
 }
 
