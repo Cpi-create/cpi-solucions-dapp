@@ -49,14 +49,20 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         lastIncomeDistribution = block.timestamp;
     }
 
-    function checkUpkeep(bytes calldata) external view override returns (bool upkeepNeeded, bytes memory performData) {
+    function checkUpkeep(bytes calldata)
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
         upkeepNeeded = block.timestamp > lastIncomeDistribution + 1 days &&
-                       IERC20(usdcToken).balanceOf(address(this)) >= dailyIncome;
+            IERC20(usdcToken).balanceOf(address(this)) >= dailyIncome;
         performData = "";
     }
 
     function getTokenHolders() internal view returns (address[] memory) {
-        address; // Declaramos un array de tamaño 1
+        // Declaramos el array de titulares con una longitud de 1 (inicialmente solo el propietario)
+        address;
         holders[0] = owner(); // Agregamos al propietario como el único titular
         return holders; // Retornamos el array
     }
