@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+import "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
 interface IUniswapV3Pool {
     function mint(
@@ -21,6 +21,7 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
     uint256 public dailyIncome;
 
     mapping(address => uint256) public rewards;
+    mapping(address => bool) private tokenHolders;
 
     constructor(
         string memory name,
@@ -32,6 +33,7 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         transferOwnership(admin);
         usdcToken = _usdcToken;
         _mint(admin, initialSupply * 10 ** decimals());
+        tokenHolders[admin] = true; // Registrar al admin como titular inicial
     }
 
     function setUsdcToken(address _usdcToken) external onlyOwner {
@@ -61,9 +63,18 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
     }
 
     function getTokenHolders() internal view returns (address[] memory) {
-        address;
-        holders[0] = owner();
+        uint256 count = 0;
+        address[] memory holders = new address[](count); // Cambiar en implementación futura
+        holders[0] = owner(); // Por ahora, devolver solo el propietario
         return holders;
+    }
+
+    function transfer(address recipient, uint256 amount) public override returns (bool) {
+        bool success = super.transfer(recipient, amount);
+        if (success) {
+            tokenHolders[recipient] = true; // Registrar al receptor como titular
+        }
+        return success;
     }
 }
 
