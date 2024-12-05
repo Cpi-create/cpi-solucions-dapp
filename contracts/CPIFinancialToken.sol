@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
-
 contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
     address public usdcToken;
     uint256 public lastIncomeDistribution;
@@ -57,9 +56,9 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
     }
 
     function getTokenHolders() internal view returns (address[] memory) {
-        address;
-        holders[0] = owner();
-        return holders;
+        address; // Declaramos un array de tamaño 1
+        holders[0] = owner(); // Agregamos al propietario como el único titular
+        return holders; // Retornamos el array
     }
 }
 
