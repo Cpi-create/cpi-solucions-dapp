@@ -18,7 +18,8 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         address admin,
         address _usdcToken,
         uint256 initialSupply
-    ) ERC20(name, symbol) Ownable(admin) {
+    ) ERC20(name, symbol) {
+        transferOwnership(admin);
         usdcToken = _usdcToken;
         _mint(admin, initialSupply * 10 ** decimals());
     }
@@ -60,11 +61,11 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         performData = "";
     }
 
+    // **Corrección aquí**
     function getTokenHolders() internal view returns (address[] memory) {
-        // Declaramos un array en memoria con una longitud fija de 1
-        address; // Creamos el array con una longitud de 1
-        holders[0] = owner(); // Asignamos al propietario como único titular
-        return holders; // Retornamos el array correctamente
+        address; // Creamos un array dinámico con 1 espacio
+        holders[0] = owner(); // Agregamos al propietario como único titular por ahora
+        return holders; // Retornamos el array
     }
 }
 
