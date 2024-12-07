@@ -39,7 +39,7 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         uint256 balance = IERC20(usdcToken).balanceOf(address(this));
         require(balance >= dailyIncome, "No hay suficiente USDC");
 
-        address[] memory holders = getTokenHolders(); // Obtenemos los titulares
+        address[] memory holders = getTokenHolders();
         for (uint256 i = 0; i < holders.length; i++) {
             uint256 reward = (balanceOf(holders[i]) * dailyIncome) / totalSupply();
             IERC20(usdcToken).transfer(holders[i], reward);
@@ -60,11 +60,10 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         performData = "";
     }
 
-    // Declaración de titulares del token
     function getTokenHolders() internal view returns (address[] memory) {
-        // Creamos un array en memoria con una longitud fija de 1 (solo el propietario)
-        address;
-        holders[0] = owner(); // Asignamos al propietario como el único titular
+        // Declaramos un array en memoria con una longitud fija
+        address[] m Array dinámico inicializado
+        holders[0] = owner(); // Asignamos al propietario como único titular
         return holders; // Retornamos el array
     }
 }
