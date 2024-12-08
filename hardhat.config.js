@@ -2,7 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config(); // Carga las variables de entorno desde el archivo .env
 
 module.exports = {
-    solidity: "0.8.27", // Versión de Solidity que usaremos
+    solidity: "0.8.17", // Cambiado a 0.8.17 para coincidir con el contrato
     networks: {
         polygon: {
             url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`, // Usamos la clave correcta
