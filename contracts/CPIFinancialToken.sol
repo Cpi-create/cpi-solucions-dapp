@@ -64,7 +64,7 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
     // Declaración y uso correcto del array holders
     function getTokenHolders() internal view returns (address[] memory) {
         // Declaramos un array dinámico con una longitud inicial de 1
-        address; // Inicializamos el array
+        address; // Inicializamos el array correctamente
         holders[0] = owner(); // Asignamos al propietario como único titular
         return holders; // Retornamos el array
     }
