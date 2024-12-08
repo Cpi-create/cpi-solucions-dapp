@@ -12,6 +12,9 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
 
     mapping(address => uint256) public rewards;
 
+    event TokenTransferred(address indexed from, address indexed to, uint256 amount);
+    event IncomeDeposited(address indexed from, uint256 amount);
+
     constructor(
         string memory name,
         string memory symbol,
@@ -32,6 +35,7 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         IERC20(usdcToken).transferFrom(msg.sender, address(this), amount);
         dailyIncome = amount / 30;
         lastIncomeDistribution = block.timestamp;
+        emit IncomeDeposited(msg.sender, amount);
     }
 
     function performUpkeep(bytes calldata) external override {
@@ -40,11 +44,14 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         uint256 balance = IERC20(usdcToken).balanceOf(address(this));
         require(balance >= dailyIncome, "No hay suficiente USDC");
 
-        address[] memory holders = getTokenHolders();
-        for (uint256 i = 0; i < holders.length; i++) {
-            uint256 reward = (balanceOf(holders[i]) * dailyIncome) / totalSupply();
-            IERC20(usdcToken).transfer(holders[i], reward);
-            rewards[holders[i]] += reward;
+        uint256 totalSupplyTokens = totalSupply();
+        require(totalSupplyTokens > 0, "No hay tokens en circulación");
+
+        // Distribuir ingresos proporcionalmente
+        for (uint256 i = 0; i < balanceOf(owner()); i++) {
+            uint256 reward = (balanceOf(owner()) * dailyIncome) / totalSupply();
+            IERC20(usdcToken).transfer(owner(), reward);
+            rewards[owner()] += reward;
         }
 
         lastIncomeDistribution = block.timestamp;
@@ -61,47 +68,8 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         performData = "";
     }
 
-    // Declaración y uso correcto del array holders
-    function getTokenHolders() internal view returns (address[] memory) {
-    // Declaramos un array dinámico con una longitud inicial de 1
-    address; 
-    holders[0] = owner(); // Asignamos al propietario como único titular
-    return holders; // Retornamos el array
-}
-
-}
-
-contract CPIFinancialFactory {
-    address[] public createdTokens;
-
-    event TokenCreated(
-        address indexed tokenAddress,
-        string name,
-        string symbol,
-        address admin
-    );
-
-    function createToken(
-        string memory name,
-        string memory symbol,
-        address admin,
-        address usdcToken,
-        uint256 initialSupply
-    ) external returns (address) {
-        CPIFinancialToken newToken = new CPIFinancialToken(
-            name,
-            symbol,
-            admin,
-            usdcToken,
-            initialSupply
-        );
-        createdTokens.push(address(newToken));
-
-        emit TokenCreated(address(newToken), name, symbol, admin);
-        return address(newToken);
-    }
-
-    function getCreatedTokens() external view returns (address[] memory) {
-        return createdTokens;
+    // Se elimina la lógica de rastreo dinámico
+    function getTokenHolders() external pure {
+        revert("Funcionalidad movida fuera de la cadena (off-chain)");
     }
 }
