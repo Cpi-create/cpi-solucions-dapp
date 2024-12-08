@@ -12,8 +12,8 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
 
     mapping(address => uint256) public rewards;
 
-    event TokenTransferred(address indexed from, address indexed to, uint256 amount);
     event IncomeDeposited(address indexed from, uint256 amount);
+    event IncomeDistributed(address indexed to, uint256 amount);
 
     constructor(
         string memory name,
@@ -39,19 +39,24 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
     }
 
     function performUpkeep(bytes calldata) external override {
-        require(block.timestamp > lastIncomeDistribution + 1 days, "Ya distribuido hoy");
+        require(block.timestamp > lastIncomeDistribution + 1 days, "Already distributed today");
 
         uint256 balance = IERC20(usdcToken).balanceOf(address(this));
-        require(balance >= dailyIncome, "No hay suficiente USDC");
+        require(balance >= dailyIncome, "Insufficient USDC");
 
         uint256 totalSupplyTokens = totalSupply();
-        require(totalSupplyTokens > 0, "No hay tokens en circulación");
+        require(totalSupplyTokens > 0, "No tokens in circulation");
 
         // Distribuir ingresos proporcionalmente
-        for (uint256 i = 0; i < balanceOf(owner()); i++) {
-            uint256 reward = (balanceOf(owner()) * dailyIncome) / totalSupply();
-            IERC20(usdcToken).transfer(owner(), reward);
-            rewards[owner()] += reward;
+        for (uint256 i = 0; i < totalSupplyTokens; i++) {
+            address holder = address(uint160(i)); // Simulación de titulares para fines de demostración.
+            uint256 holderBalance = balanceOf(holder);
+            if (holderBalance > 0) {
+                uint256 reward = (holderBalance * dailyIncome) / totalSupplyTokens;
+                IERC20(usdcToken).transfer(holder, reward);
+                rewards[holder] += reward;
+                emit IncomeDistributed(holder, reward);
+            }
         }
 
         lastIncomeDistribution = block.timestamp;
@@ -67,9 +72,39 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
             IERC20(usdcToken).balanceOf(address(this)) >= dailyIncome;
         performData = "";
     }
+}
 
-    // Se elimina la lógica de rastreo dinámico
-    function getTokenHolders() external pure {
-        revert("Funcionalidad movida fuera de la cadena (off-chain)");
+contract CPIFinancialFactory {
+    address[] public createdTokens;
+
+    event TokenCreated(
+        address indexed tokenAddress,
+        string name,
+        string symbol,
+        address admin
+    );
+
+    function createToken(
+        string memory name,
+        string memory symbol,
+        address admin,
+        address usdcToken,
+        uint256 initialSupply
+    ) external returns (address) {
+        CPIFinancialToken newToken = new CPIFinancialToken(
+            name,
+            symbol,
+            admin,
+            usdcToken,
+            initialSupply
+        );
+        createdTokens.push(address(newToken));
+
+        emit TokenCreated(address(newToken), name, symbol, admin);
+        return address(newToken);
+    }
+
+    function getCreatedTokens() external view returns (address[] memory) {
+        return createdTokens;
     }
 }
