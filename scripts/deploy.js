@@ -1,19 +1,28 @@
-const { ethers } = require("hardhat");
+const hre = require("hardhat");
 
 async function main() {
-    const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Dirección del contrato USDC en Polygon
+    const [deployer] = await hre.ethers.getSigners();
 
-    console.log("Deploying CPIFinancialFactory...");
-    const CPIFinancialFactory = await ethers.getContractFactory("CPIFinancialFactory");
-    const factory = await CPIFinancialFactory.deploy();
+    console.log("Deploying contracts with the account:", deployer.address);
+    console.log("Account balance:", (await deployer.getBalance()).toString());
 
-    console.log("Awaiting deployment...");
-    await factory.waitForDeployment();
+    const CPIFinancialToken = await hre.ethers.getContractFactory("CPIFinancialToken");
+    const token = await CPIFinancialToken.deploy(
+        "MyToken",      // Nombre del token
+        "MTK",          // Símbolo del token
+        deployer.address,  // Dirección del administrador
+        "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", // Dirección de USDC en Polygon
+        1000000          // Suministro inicial
+    );
 
-    console.log("CPIFinancialFactory deployed to:", factory.target);
+    await token.deployed();
+
+    console.log("CPIFinancialToken deployed to:", token.address);
 }
 
-main().catch((error) => {
-    console.error("Error al desplegar el contrato:", error);
-    process.exitCode = 1;
-});
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
