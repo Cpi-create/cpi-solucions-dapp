@@ -4,7 +4,15 @@ require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 
 module.exports = {
-  solidity: "0.8.17",
+  solidity: {
+    version: "0.8.17", // Ajusta para usar la versión exacta del compilador
+    settings: {
+      optimizer: {
+        enabled: true, // Activa optimización para que coincida con el bytecode
+        runs: 200, // Valor utilizado en el compilador
+      },
+    },
+  },
   networks: {
     polygon: {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
