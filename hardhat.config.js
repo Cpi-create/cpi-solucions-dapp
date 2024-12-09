@@ -1,15 +1,9 @@
-require("@nomicfoundation/hardhat-ethers");
-require("@nomiclabs/hardhat-etherscan");
-require("@nomiclabs/hardhat-waffle");
-require("dotenv").config();
-
 module.exports = {
   solidity: {
-    version: "0.8.17", // Ajusta para usar la versión exacta del compilador
+    version: "0.8.17",
     settings: {
       optimizer: {
-        enabled: true, // Activa optimización para que coincida con el bytecode
-        runs: 200, // Valor utilizado en el compilador
+        enabled: false, // Deshabilitar la optimización
       },
     },
   },
