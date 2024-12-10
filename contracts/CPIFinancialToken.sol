@@ -6,18 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
 contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
-    address public usdcToken; // Dirección del contrato USDC
+    address public usdcToken;
     uint256 public lastIncomeDistribution;
     uint256 public dailyIncome;
 
-    mapping(address => uint256) public rewards; // Recompensas acumuladas para cada dirección
-    mapping(address => bool) private holdersMap; // Mapa para rastrear titulares de tokens
-    address[] private holdersList; // Lista dinámica de titulares de tokens
-
-    // Eventos
-    event IncomeDeposited(address indexed from, uint256 amount);
-    event RewardsDistributed(uint256 totalAmount, uint256 timestamp);
-    event TokensPurchased(address indexed buyer, uint256 amount);
+    mapping(address => uint256) public rewards;
+    address[] private holders;
 
     constructor(
         string memory name,
@@ -29,6 +23,7 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         transferOwnership(admin); // Transfiere la propiedad al administrador inicial
         usdcToken = _usdcToken;
         _mint(admin, initialSupply * 10 ** decimals());
+        holders.push(admin); // Agregar el administrador como titular inicial
     }
 
     function setUsdcToken(address _usdcToken) external onlyOwner {
@@ -37,10 +32,8 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
 
     function depositIncome(uint256 amount) external {
         IERC20(usdcToken).transferFrom(msg.sender, address(this), amount);
-        dailyIncome = amount / 30; // Divide el monto depositado para 30 días
+        dailyIncome = amount / 30;
         lastIncomeDistribution = block.timestamp;
-
-        emit IncomeDeposited(msg.sender, amount);
     }
 
     function performUpkeep(bytes calldata) external override {
@@ -49,17 +42,13 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         uint256 balance = IERC20(usdcToken).balanceOf(address(this));
         require(balance >= dailyIncome, "No hay suficiente USDC");
 
-        for (uint256 i = 0; i < holdersList.length; i++) {
-            address holder = holdersList[i];
-            uint256 reward = (balanceOf(holder) * dailyIncome) / totalSupply();
-            if (reward > 0) {
-                IERC20(usdcToken).transfer(holder, reward);
-                rewards[holder] += reward;
-            }
+        for (uint256 i = 0; i < holders.length; i++) {
+            uint256 reward = (balanceOf(holders[i]) * dailyIncome) / totalSupply();
+            IERC20(usdcToken).transfer(holders[i], reward);
+            rewards[holders[i]] += reward;
         }
 
         lastIncomeDistribution = block.timestamp;
-        emit RewardsDistributed(dailyIncome, block.timestamp);
     }
 
     function checkUpkeep(bytes calldata)
@@ -73,60 +62,37 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
         performData = "";
     }
 
-    // Función para comprar tokens
-    function buyTokens(uint256 amount) external {
-        uint256 usdcAmount = amount * 1e6; // Suponemos relación 1:1 entre USDC y tokens
-        IERC20(usdcToken).transferFrom(msg.sender, address(this), usdcAmount);
-        _mint(msg.sender, amount);
-        _updateHolders(msg.sender);
-
-        emit TokensPurchased(msg.sender, amount);
-    }
-
-    // Función para actualizar titulares al transferir tokens
     function transfer(address recipient, uint256 amount) public override returns (bool) {
-        bool success = super.transfer(recipient, amount);
-        if (success) {
-            _updateHolders(msg.sender);
-            _updateHolders(recipient);
-        }
-        return success;
+        super.transfer(recipient, amount);
+        _updateHolders(recipient);
+        return true;
     }
 
-    // Función para actualizar titulares al realizar transferencias internas
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) public override returns (bool) {
-        bool success = super.transferFrom(sender, recipient, amount);
-        if (success) {
-            _updateHolders(sender);
-            _updateHolders(recipient);
+    function _updateHolders(address account) internal {
+        if (balanceOf(account) > 0 && !_isHolder(account)) {
+            holders.push(account);
+        } else if (balanceOf(account) == 0) {
+            _removeHolder(account);
         }
-        return success;
     }
 
-    // Actualiza la lista de titulares
-    function _updateHolders(address holder) private {
-        if (balanceOf(holder) > 0 && !holdersMap[holder]) {
-            holdersMap[holder] = true;
-            holdersList.push(holder);
-        } else if (balanceOf(holder) == 0 && holdersMap[holder]) {
-            holdersMap[holder] = false;
-            for (uint256 i = 0; i < holdersList.length; i++) {
-                if (holdersList[i] == holder) {
-                    holdersList[i] = holdersList[holdersList.length - 1];
-                    holdersList.pop();
-                    break;
-                }
+    function _isHolder(address account) internal view returns (bool) {
+        for (uint256 i = 0; i < holders.length; i++) {
+            if (holders[i] == account) {
+                return true;
             }
         }
+        return false;
     }
 
-    // Retorna la lista de titulares actuales
-    function getTokenHolders() external view returns (address[] memory) {
-        return holdersList;
+    function _removeHolder(address account) internal {
+        for (uint256 i = 0; i < holders.length; i++) {
+            if (holders[i] == account) {
+                holders[i] = holders[holders.length - 1];
+                holders.pop();
+                break;
+            }
+        }
     }
 }
 
