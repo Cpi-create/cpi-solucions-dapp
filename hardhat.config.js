@@ -4,11 +4,15 @@ require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 
 module.exports = {
+  paths: {
+    sources: "./contracts", // Carpeta donde están los contratos
+  },
   solidity: {
     version: "0.8.17",
     settings: {
       optimizer: {
-        enabled: false, // Deshabilitar la optimización
+        enabled: true, // Activar optimización
+        runs: 200,     // Configuración estándar para Mainnet
       },
     },
   },
