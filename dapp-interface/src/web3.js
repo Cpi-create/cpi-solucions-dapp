@@ -1,19 +1,19 @@
 import { ethers } from 'ethers';
 
+const contractAddress = "DIRECCION_DE_TU_CONTRATO"; // Reemplaza con la dirección de tu contrato
+const contractABI = [
+  // Copia y pega el ABI generado en el archivo "artifacts/contracts/CPIFinancialToken.json"
+];
+
 const connectBlockchain = async () => {
   if (window.ethereum) {
     try {
-      // Solicitar acceso a la wallet del usuario
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-      // Crear un proveedor para interactuar con la blockchain
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-      // Obtener el signer (usuario conectado)
       const signer = provider.getSigner();
-
+      const contract = new ethers.Contract(contractAddress, contractABI, signer);
       console.log('Conectado a la blockchain');
-      return { provider, signer };
+      return { provider, signer, contract };
     } catch (error) {
       console.error('Error al conectar con la blockchain:', error);
     }
