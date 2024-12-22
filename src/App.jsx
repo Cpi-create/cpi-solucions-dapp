@@ -5,94 +5,61 @@ function App() {
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [initialSupply, setInitialSupply] = useState("");
+  const [walletAddress, setWalletAddress] = useState("");
   const [message, setMessage] = useState("");
-  const [tokens, setTokens] = useState([]);
-  const [account, setAccount] = useState(null);
 
-  // Conectar MetaMask
+  // Función para conectar MetaMask
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
-        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-        setAccount(accounts[0]); // Guardar la cuenta conectada
-        setMessage("Wallet conectada: " + accounts[0]);
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        setWalletAddress(accounts[0]);
+        setMessage("¡Wallet conectada exitosamente!");
       } catch (error) {
-        setMessage("Error al conectar la wallet.");
-        console.error(error);
+        console.error("Error al conectar MetaMask:", error);
+        setMessage("Error al conectar MetaMask.");
       }
     } else {
-      setMessage("MetaMask no está instalado. Por favor, instálalo para usar la DApp.");
+      setMessage("MetaMask no está instalada.");
     }
   };
 
-  // Obtener la lista de tokens creados al cargar la página
-  useEffect(() => {
-    async function fetchTokens() {
-      const createdTokens = await getCreatedTokens();
-      setTokens(createdTokens);
-    }
-    fetchTokens();
-  }, []);
-
   const handleCreateToken = async () => {
-    if (!account) {
-      setMessage("Conecta tu wallet antes de crear un token.");
-      return;
-    }
     try {
       setMessage("Creando token...");
-      const txHash = await createToken(name, symbol, account, process.env.REACT_APP_USDC_ADDRESS, initialSupply);
+      const txHash = await createToken(name, symbol, walletAddress, "<USDC_CONTRACT_ADDRESS>", initialSupply);
       setMessage(`¡Token creado con éxito! Hash de la transacción: ${txHash}`);
-      const updatedTokens = await getCreatedTokens(); // Actualizar lista de tokens creados
-      setTokens(updatedTokens);
     } catch (error) {
+      console.error("Error al crear el token:", error);
       setMessage("Error al crear el token.");
-      console.error(error);
     }
   };
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", padding: "2rem" }}>
       <h1>¡Bienvenido a CPI Financial DApp!</h1>
+      <button onClick={connectWallet} style={{ marginBottom: "1rem", padding: "0.5rem 1rem" }}>
+        {walletAddress ? `Wallet Conectada: ${walletAddress}` : "Conectar Wallet"}
+      </button>
       <h2>Crear un nuevo token</h2>
-      
-      {/* Botón para conectar wallet */}
-      {!account ? (
-        <button onClick={connectWallet}>Conectar Wallet</button>
-      ) : (
-        <p>Wallet conectada: {account}</p>
-      )}
-
-      <div style={{ margin: "1rem" }}>
-        <input
-          type="text"
-          placeholder="Nombre del token"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Símbolo del token"
-          value={symbol}
-          onChange={(e) => setSymbol(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Suministro inicial"
-          value={initialSupply}
-          onChange={(e) => setInitialSupply(e.target.value)}
-        />
-        <button onClick={handleCreateToken}>Crear Token</button>
+      <div style={{ marginBottom: "1rem" }}>
+        <label>Nombre del token:</label>
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
-
+      <div style={{ marginBottom: "1rem" }}>
+        <label>Símbolo del token:</label>
+        <input type="text" value={symbol} onChange={(e) => setSymbol(e.target.value)} />
+      </div>
+      <div style={{ marginBottom: "1rem" }}>
+        <label>Suministro inicial:</label>
+        <input type="number" value={initialSupply} onChange={(e) => setInitialSupply(e.target.value)} />
+      </div>
+      <button onClick={handleCreateToken} style={{ padding: "0.5rem 1rem" }}>
+        Crear Token
+      </button>
       <p>{message}</p>
-
-      <h2>Tokens creados</h2>
-      <ul>
-        {tokens.map((token, index) => (
-          <li key={index}>{token}</li>
-        ))}
-      </ul>
     </div>
   );
 }
