@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
 // Dirección del contrato Factory y ABI
-const factoryAddress = "0x5f7Bb342D4A1A4597d195572873e013c843c3D1f"; // Dirección actualizada
+const factoryAddress = "0x4A95cEe1C8f20dd3982295271369CA0CE8f5E212"; // Dirección actualizada
 const factoryABI = [
   {
     "inputs": [
