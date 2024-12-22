@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createToken, getCreatedTokens } from "./web3";
+import { createToken, getCreatedTokens } from "./web3.jsx";
 
 function App() {
   const [name, setName] = useState("");

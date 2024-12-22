@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
 // Dirección del contrato Factory y ABI
-const factoryAddress = "0x42Af6C9C31d889cDB84B9891cA05Fc0c4ab29D6b"; // Dirección del contrato Factory
+const factoryAddress = "0x5f7Bb342D4A1A4597d195572873e013c843c3D1f"; // Dirección actualizada
 const factoryABI = [
   {
     "inputs": [
@@ -25,14 +25,16 @@ const factoryABI = [
   }
 ];
 
+// Función para crear un nuevo token
 export const createToken = async (name, symbol, admin, usdcToken, initialSupply) => {
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
+    const provider = new ethers.BrowserProvider(window.ethereum); // Conexión a la wallet
+    const signer = await provider.getSigner(); // Usuario conectado
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, signer);
 
+    // Llamada a la función createToken del contrato
     const tx = await factoryContract.createToken(name, symbol, admin, usdcToken, initialSupply);
-    await tx.wait();
+    await tx.wait(); // Espera a que la transacción se confirme
 
     return tx.hash; // Devuelve el hash de la transacción
   } catch (error) {
@@ -41,6 +43,7 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
   }
 };
 
+// Función para obtener los tokens creados
 export const getCreatedTokens = async () => {
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
