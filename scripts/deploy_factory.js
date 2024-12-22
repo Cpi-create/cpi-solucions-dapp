@@ -5,7 +5,10 @@ async function main() {
     const CPIFinancialFactory = await hre.ethers.getContractFactory("CPIFinancialFactory");
 
     // Desplegamos el contrato
-    const factory = await CPIFinancialFactory.deploy();
+    const factory = await CPIFinancialFactory.deploy({
+      gasPrice: hre.ethers.utils.parseUnits('50', 'gwei') // Ajusta el precio del gas si es necesario
+  });
+  
 
     await factory.deployed();
 
