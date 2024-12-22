@@ -1,13 +1,17 @@
 const hre = require("hardhat");
 
 async function main() {
-  const Factory = await hre.ethers.getContractFactory("CPIFactory");
-  const factory = await Factory.deploy();
+    const CPIFinancialFactory = await hre.ethers.getContractFactory("CPIFinancialFactory");
+    const factory = await CPIFinancialFactory.deploy();
 
-  console.log("Factory deployed to:", factory.address);
+    await factory.deployed();
+
+    console.log("Factory deployed to:", factory.address);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
