@@ -11,7 +11,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite --port 3000"  // Agregamos esta línea para iniciar en el puerto 3000
+    "start": "vite --port 3000"
   },
   "keywords": [],
   "author": "",
