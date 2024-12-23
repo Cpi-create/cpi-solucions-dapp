@@ -9,20 +9,20 @@ const factoryABI = [
       { "internalType": "string", "name": "symbol", "type": "string" },
       { "internalType": "address", "name": "admin", "type": "address" },
       { "internalType": "address", "name": "usdcToken", "type": "address" },
-      { "internalType": "uint256", "name": "initialSupply", "type": "uint256" }
+      { "internalType": "uint256", "name": "initialSupply", "type": "uint256" },
     ],
     "name": "createToken",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "nonpayable",
-    "type": "function"
+    "type": "function",
   },
   {
     "inputs": [],
     "name": "getCreatedTokens",
     "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }],
     "stateMutability": "view",
-    "type": "function"
-  }
+    "type": "function",
+  },
 ];
 
 // Función para crear un nuevo token
@@ -46,7 +46,7 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
 // Función para obtener los tokens creados
 export const getCreatedTokens = async () => {
   try {
-    const provider = new ethers.providers.Web3Provider(window.ethereum); // Conexión a la wallet
+    const provider = new ethers.providers.Web3Provider(window.ethereum); // Conexión al proveedor
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
 
     const tokens = await factoryContract.getCreatedTokens();
@@ -54,5 +54,28 @@ export const getCreatedTokens = async () => {
   } catch (error) {
     console.error("Error al obtener los tokens creados:", error);
     return [];
+  }
+};
+
+// Función para obtener el balance de un token específico
+export const getTokenBalance = async (tokenAddress, userAddress) => {
+  try {
+    const provider = new ethers.providers.Web3Provider(window.ethereum); // Conexión al proveedor
+    const tokenABI = [
+      {
+        "constant": true,
+        "inputs": [{ "name": "owner", "type": "address" }],
+        "name": "balanceOf",
+        "outputs": [{ "name": "balance", "type": "uint256" }],
+        "type": "function",
+      },
+    ];
+
+    const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
+    const balance = await tokenContract.balanceOf(userAddress); // Obtiene el balance del usuario
+    return ethers.utils.formatUnits(balance, 18); // Convierte el balance a formato legible (asumiendo 18 decimales)
+  } catch (error) {
+    console.error("Error al obtener el balance del token:", error);
+    return "0";
   }
 };
