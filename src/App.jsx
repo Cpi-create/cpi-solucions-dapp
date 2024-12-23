@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { createToken, getCreatedTokens } from "./web3.jsx";
+import React, { useState } from "react";
+import { createToken } from "./web3.jsx";
 
 function App() {
   const [name, setName] = useState("");
@@ -22,18 +22,23 @@ function App() {
         setMessage("Error al conectar MetaMask.");
       }
     } else {
-      setMessage("MetaMask no está instalada.");
+      setMessage("MetaMask no está instalada. Por favor, instálala para usar esta DApp.");
     }
   };
 
   const handleCreateToken = async () => {
+    if (!walletAddress) {
+      setMessage("Conecta tu wallet antes de crear un token.");
+      return;
+    }
     try {
       setMessage("Creando token...");
-      const txHash = await createToken(name, symbol, walletAddress, "<USDC_CONTRACT_ADDRESS>", initialSupply);
+      const usdcContractAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Reemplaza con la dirección real del contrato USDC
+      const txHash = await createToken(name, symbol, walletAddress, usdcContractAddress, initialSupply);
       setMessage(`¡Token creado con éxito! Hash de la transacción: ${txHash}`);
     } catch (error) {
       console.error("Error al crear el token:", error);
-      setMessage("Error al crear el token.");
+      setMessage("Error al crear el token. Verifica los datos y vuelve a intentarlo.");
     }
   };
 
