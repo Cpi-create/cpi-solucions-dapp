@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
 // Dirección del contrato Factory y ABI
-const factoryAddress = "0x4A95cEe1C8f20dd3982295271369CA0CE8f5E212"; // Actualiza si la dirección cambia
+const factoryAddress = "0x4A95cEe1C8f20dd3982295271369CA0CE8f5E212"; // Actualiza si cambia
 const factoryABI = [
   {
     "inputs": [
@@ -32,6 +32,10 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
     const signer = provider.getSigner();
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, signer);
 
+    if (!ethers.utils.isAddress(admin) || !ethers.utils.isAddress(usdcToken)) {
+      throw new Error("Dirección inválida para admin o USDC.");
+    }
+
     const tx = await factoryContract.createToken(name, symbol, admin, usdcToken, initialSupply);
     await tx.wait();
     return tx.hash;
@@ -57,6 +61,10 @@ export const getCreatedTokens = async () => {
 // Consultar balance de un token
 export const getTokenBalance = async (tokenAddress, userAddress) => {
   try {
+    if (!ethers.utils.isAddress(tokenAddress) || !ethers.utils.isAddress(userAddress)) {
+      throw new Error("Dirección inválida para el token o usuario.");
+    }
+
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const tokenABI = [
       {
@@ -67,6 +75,7 @@ export const getTokenBalance = async (tokenAddress, userAddress) => {
         "type": "function",
       },
     ];
+
     const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
     const balance = await tokenContract.balanceOf(userAddress);
     return ethers.utils.formatUnits(balance, 18);
@@ -79,6 +88,10 @@ export const getTokenBalance = async (tokenAddress, userAddress) => {
 // Transferir tokens
 export const transferTokens = async (tokenAddress, toAddress, amount) => {
   try {
+    if (!ethers.utils.isAddress(tokenAddress) || !ethers.utils.isAddress(toAddress)) {
+      throw new Error("Dirección inválida para el token o destino.");
+    }
+
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const tokenABI = [
@@ -93,6 +106,7 @@ export const transferTokens = async (tokenAddress, toAddress, amount) => {
         "type": "function"
       }
     ];
+
     const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
     const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
 
@@ -106,8 +120,12 @@ export const transferTokens = async (tokenAddress, toAddress, amount) => {
 };
 
 // Comprar tokens
-export const buyTokens = async (amount, price, buyerAddress) => {
+export const buyTokens = async (tokenAddress, amount, price) => {
   try {
+    if (!ethers.utils.isAddress(tokenAddress)) {
+      throw new Error("Dirección de token inválida.");
+    }
+
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const usdcABI = [
@@ -123,12 +141,14 @@ export const buyTokens = async (amount, price, buyerAddress) => {
       }
     ];
 
-    // Aquí puedes usar la dirección real del contrato USDC
-    const usdcContract = new ethers.Contract("<USDC_CONTRACT_ADDRESS>", usdcABI, signer);
-    const formattedAmount = ethers.utils.parseUnits((amount * price).toString(), 6); // USDC usa 6 decimales
+    const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Dirección de USDC en Polygon
+    const usdcContract = new ethers.Contract(usdcAddress, usdcABI, signer);
 
-    const tx = await usdcContract.transfer(factoryAddress, formattedAmount); // Transfiere USDC al contrato Factory
+    const totalCost = ethers.utils.parseUnits((amount * price).toString(), 6); // USDC usa 6 decimales
+
+    const tx = await usdcContract.transfer(tokenAddress, totalCost);
     await tx.wait();
+
     return tx.hash;
   } catch (error) {
     console.error("Error al comprar tokens:", error);
