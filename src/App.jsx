@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createToken, getCreatedTokens, transferTokens, getTokenBalance } from "./web3.jsx";
+import { createToken, getCreatedTokens, transferTokens, getTokenBalance, buyTokens } from "./web3.jsx";
 
 function App() {
   const [name, setName] = useState("");
@@ -12,16 +12,19 @@ function App() {
   const [transferAddress, setTransferAddress] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
   const [tokenBalance, setTokenBalance] = useState("");
+  const [usdcBalance, setUsdcBalance] = useState("");
+  const [buyAmount, setBuyAmount] = useState("");
+
+  const TOKEN_PRICE = 0.05; // Precio fijo: 1 Token = 0.05 USDC
 
   // Función para conectar MetaMask
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
         setWalletAddress(accounts[0]);
         setMessage("¡Wallet conectada exitosamente!");
+        await fetchBalances();
       } catch (error) {
         console.error("Error al conectar MetaMask:", error);
         setMessage("Error al conectar MetaMask.");
@@ -31,7 +34,22 @@ function App() {
     }
   };
 
-  // Crear un nuevo token (Solo administrador)
+  // Obtener balances de tokens y USDC
+  const fetchBalances = async () => {
+    try {
+      if (selectedToken) {
+        const balance = await getTokenBalance(selectedToken, walletAddress);
+        setTokenBalance(balance);
+      }
+      const usdc = await getTokenBalance("<USDC_CONTRACT_ADDRESS>", walletAddress); // Reemplaza con la dirección del contrato USDC
+      setUsdcBalance(usdc);
+    } catch (error) {
+      console.error("Error al obtener balances:", error);
+      setMessage("Error al obtener balances.");
+    }
+  };
+
+  // Crear un nuevo token
   const handleCreateToken = async () => {
     try {
       setMessage("Creando token...");
@@ -44,13 +62,16 @@ function App() {
     }
   };
 
-  // Obtener tokens creados
-  const fetchTokens = async () => {
+  // Comprar tokens
+  const handleBuyTokens = async () => {
     try {
-      const createdTokens = await getCreatedTokens();
-      setTokens(createdTokens);
+      setMessage("Procesando compra...");
+      const txHash = await buyTokens(buyAmount, TOKEN_PRICE, walletAddress);
+      setMessage(`¡Compra exitosa! Hash de la transacción: ${txHash}`);
+      await fetchBalances(); // Actualizar balances
     } catch (error) {
-      console.error("Error al obtener los tokens creados:", error);
+      console.error("Error al comprar tokens:", error);
+      setMessage("Error al comprar tokens.");
     }
   };
 
@@ -60,6 +81,7 @@ function App() {
       setMessage("Realizando transferencia...");
       const txHash = await transferTokens(selectedToken, transferAddress, transferAmount);
       setMessage(`¡Transferencia exitosa! Hash de la transacción: ${txHash}`);
+      await fetchBalances();
     } catch (error) {
       console.error("Error al transferir tokens:", error);
       setMessage("Error al transferir tokens.");
@@ -77,6 +99,16 @@ function App() {
     }
   };
 
+  // Obtener tokens creados
+  const fetchTokens = async () => {
+    try {
+      const createdTokens = await getCreatedTokens();
+      setTokens(createdTokens);
+    } catch (error) {
+      console.error("Error al obtener los tokens creados:", error);
+    }
+  };
+
   // Obtener lista de tokens al cargar la página
   useEffect(() => {
     fetchTokens();
@@ -88,28 +120,22 @@ function App() {
       <button onClick={connectWallet} style={{ marginBottom: "1rem", padding: "0.5rem 1rem" }}>
         {walletAddress ? `Wallet Conectada: ${walletAddress}` : "Conectar Wallet"}
       </button>
-      {walletAddress === "0xc29C9bd0BC978dFCAd34Be1AE66D8E785C152c55" ? (
-        <>
-          <h2>Crear un nuevo token</h2>
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Nombre del token:</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Símbolo del token:</label>
-            <input type="text" value={symbol} onChange={(e) => setSymbol(e.target.value)} />
-          </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Suministro inicial:</label>
-            <input type="number" value={initialSupply} onChange={(e) => setInitialSupply(e.target.value)} />
-          </div>
-          <button onClick={handleCreateToken} style={{ padding: "0.5rem 1rem" }}>
-            Crear Token
-          </button>
-        </>
-      ) : (
-        <h2>Tokens creados</h2>
-      )}
+      <h2>Comprar Tokens</h2>
+      <p>Precio fijo: 1 Token = {TOKEN_PRICE} USDC</p>
+      <div>
+        <label>Cantidad de tokens a comprar:</label>
+        <input
+          type="number"
+          value={buyAmount}
+          onChange={(e) => setBuyAmount(e.target.value)}
+          style={{ margin: "0.5rem" }}
+        />
+      </div>
+      <button onClick={handleBuyTokens} style={{ padding: "0.5rem 1rem" }}>
+        Comprar Tokens
+      </button>
+      <p>{message}</p>
+      <h2>Tokens creados</h2>
       <ul>
         {tokens.map((token, index) => (
           <li key={index}>
