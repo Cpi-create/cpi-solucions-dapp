@@ -186,6 +186,35 @@ function App() {
             Consultar balance
           </button>
           <p>Balance: {tokenBalance}</p>
+
+          {/* Sección de Transferir Tokens */}
+          <h3 style={{ color: "gold" }}>Transferir tokens</h3>
+          <div>
+            <label>Dirección de destino:</label>
+            <input
+              type="text"
+              value={transferAddress}
+              onChange={(e) => setTransferAddress(e.target.value)}
+              style={{ margin: "0.5rem", padding: "0.3rem" }}
+            />
+          </div>
+          <div>
+            <label>Cantidad a transferir:</label>
+            <input
+              type="number"
+              value={transferAmount}
+              onChange={(e) => setTransferAmount(e.target.value)}
+              style={{ margin: "0.5rem", padding: "0.3rem" }}
+            />
+          </div>
+          <button
+            onClick={handleTransfer}
+            style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
+          >
+            Transferir
+          </button>
+
+          {/* Historial de transacciones */}
           <h3 style={{ color: "gold" }}>Historial de transacciones</h3>
           <ul>
             {transactions.map((tx, index) => (
