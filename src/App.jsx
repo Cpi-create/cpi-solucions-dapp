@@ -23,7 +23,7 @@ function App() {
         const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
         setWalletAddress(accounts[0]);
         setMessage("¡Wallet conectada exitosamente!");
-        fetchTokens();
+        await fetchTokens(); // Cargar tokens creados
       } catch (error) {
         console.error("Error al conectar MetaMask:", error);
         setMessage("Error al conectar MetaMask.");
@@ -113,6 +113,7 @@ function App() {
       <button onClick={connectWallet} style={{ marginBottom: "1rem", padding: "0.5rem 1rem" }}>
         {walletAddress ? `Wallet Conectada: ${walletAddress}` : "Conectar Wallet"}
       </button>
+
       <h2>Comprar Tokens</h2>
       <p>Precio fijo: 1 Token = {TOKEN_PRICE} USDC</p>
       <div>
@@ -124,10 +125,23 @@ function App() {
           style={{ margin: "0.5rem" }}
         />
       </div>
+      <h3>Selecciona un token:</h3>
+      <ul>
+        {tokens.map((token, index) => (
+          <li key={index}>
+            {token}{" "}
+            <button onClick={() => setSelectedToken(token)}>
+              {selectedToken === token ? "Seleccionado ✔" : "Seleccionar"}
+            </button>
+          </li>
+        ))}
+      </ul>
       <button onClick={handleBuyTokens} style={{ padding: "0.5rem 1rem" }}>
         Comprar Tokens
       </button>
+
       <p>{message}</p>
+
       <h2>Tokens creados</h2>
       <ul>
         {tokens.map((token, index) => (
@@ -137,6 +151,7 @@ function App() {
           </li>
         ))}
       </ul>
+
       {selectedToken && (
         <>
           <h2>Operaciones con el token seleccionado</h2>
