@@ -129,8 +129,8 @@ function App() {
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", padding: "2rem", background: "black", color: "white" }}>
       {/* Encabezado con el logo */}
       <div style={{ marginBottom: "2rem" }}>
-        <img src="/sfi-logo.jpeg" alt="SFI Logo" style={{ height: "80px", marginBottom: "1rem" }} />
-        <h1 style={{ color: "gold" }}>¡Bienvenido a CPI Financial DApp!</h1>
+        <img src="/sfi-logo.jpeg" alt="Logo de SFI" style={{ height: "120px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(255, 215, 0, 0.5)" }} />
+        <h1 style={{ color: "gold", marginTop: "1rem" }}>¡Bienvenido a CPI Financial DApp!</h1>
       </div>
       
       {/* Conectar Wallet */}
