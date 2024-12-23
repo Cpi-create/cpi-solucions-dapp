@@ -25,18 +25,36 @@ const factoryABI = [
   }
 ];
 
+const tokenABI = [
+  {
+    "inputs": [
+      { "internalType": "address", "name": "recipient", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "transfer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "account", "type": "address" }],
+    "name": "balanceOf",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
 // Función para crear un nuevo token
 export const createToken = async (name, symbol, admin, usdcToken, initialSupply) => {
   try {
-    const provider = new ethers.providers.Web3Provider(window.ethereum); // Configuración para ethers@5
-    const signer = provider.getSigner(); // Obtenemos el firmante (cuenta conectada)
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, signer);
 
-    // Llamada a la función createToken del contrato
     const tx = await factoryContract.createToken(name, symbol, admin, usdcToken, initialSupply);
-    await tx.wait(); // Espera a que la transacción se confirme
-
-    return tx.hash; // Devuelve el hash de la transacción
+    await tx.wait();
+    return tx.hash;
   } catch (error) {
     console.error("Error al crear el token:", error);
     throw error;
@@ -46,13 +64,44 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
 // Función para obtener los tokens creados
 export const getCreatedTokens = async () => {
   try {
-    const provider = new ethers.providers.Web3Provider(window.ethereum); // Configuración para ethers@5
+    const provider = new ethers.BrowserProvider(window.ethereum);
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
 
     const tokens = await factoryContract.getCreatedTokens();
-    return tokens; // Devuelve la lista de direcciones de los tokens creados
+    return tokens;
   } catch (error) {
     console.error("Error al obtener los tokens creados:", error);
     return [];
+  }
+};
+
+// Función para transferir tokens
+export const transferTokens = async (tokenAddress, recipient, amount) => {
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
+
+    const tx = await tokenContract.transfer(recipient, amount);
+    await tx.wait();
+    return tx.hash;
+  } catch (error) {
+    console.error("Error al transferir tokens:", error);
+    throw error;
+  }
+};
+
+// Función para consultar el balance de un token
+export const getTokenBalance = async (tokenAddress) => {
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
+
+    const balance = await tokenContract.balanceOf(await signer.getAddress());
+    return ethers.formatUnits(balance, 18); // Formatear el balance a unidades legibles
+  } catch (error) {
+    console.error("Error al consultar el balance del token:", error);
+    throw error;
   }
 };
