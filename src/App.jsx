@@ -25,6 +25,7 @@ function App() {
         setWalletAddress(accounts[0]);
         setMessage("¡Wallet conectada exitosamente!");
         fetchTokens();
+        if (selectedToken) await updateBalance();
       } catch (error) {
         console.error("Error al conectar MetaMask:", error);
         setMessage("Error al conectar MetaMask.");
@@ -44,6 +45,18 @@ function App() {
     }
   };
 
+  // Actualizar balance de token seleccionado
+  const updateBalance = async () => {
+    try {
+      if (!selectedToken) return;
+      const balance = await getTokenBalance(selectedToken, walletAddress);
+      setTokenBalance(balance);
+    } catch (error) {
+      console.error("Error al actualizar el balance:", error);
+      setMessage("Error al actualizar el balance.");
+    }
+  };
+
   // Comprar tokens
   const handleBuyTokens = async () => {
     if (!selectedToken) {
@@ -60,6 +73,7 @@ function App() {
       setMessage("Procesando compra...");
       const txHash = await buyTokens(selectedToken, buyAmount, TOKEN_PRICE);
       setMessage(`¡Compra exitosa! Hash de la transacción: ${txHash}`);
+      await updateBalance(); // Actualizar balance después de comprar
       fetchTransactions(); // Actualizar historial
     } catch (error) {
       console.error("Error al comprar tokens:", error);
@@ -83,6 +97,7 @@ function App() {
       setMessage("Realizando transferencia...");
       const txHash = await transferTokens(selectedToken, transferAddress, transferAmount);
       setMessage(`¡Transferencia exitosa! Hash de la transacción: ${txHash}`);
+      await updateBalance(); // Actualizar balance después de transferir
       fetchTransactions(); // Actualizar historial
     } catch (error) {
       console.error("Error al transferir tokens:", error);
@@ -120,10 +135,14 @@ function App() {
     }
   };
 
-  // Obtener lista de tokens al cargar la página
+  // Obtener lista de tokens y balance al cargar la página
   useEffect(() => {
     fetchTokens();
   }, []);
+
+  useEffect(() => {
+    updateBalance();
+  }, [selectedToken]);
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", padding: "2rem" }}>
