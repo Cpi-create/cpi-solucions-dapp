@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
-// Dirección del contrato Factory y ABI
-const factoryAddress = "0x4A95cEe1C8f20dd3982295271369CA0CE8f5E212"; // Actualiza si cambia
+// Dirección del contrato Factory y USDC
+const factoryAddress = "0x4A95cEe1C8f20dd3982295271369CA0CE8f5E212"; // Dirección del contrato Factory
 const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Dirección del contrato USDC en Polygon
 
 const factoryABI = [
@@ -74,8 +74,8 @@ export const getTokenBalance = async (tokenAddress, userAddress) => {
         "inputs": [{ "name": "owner", "type": "address" }],
         "name": "balanceOf",
         "outputs": [{ "name": "balance", "type": "uint256" }],
-        "type": "function",
-      },
+        "type": "function"
+      }
     ];
 
     const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
@@ -156,39 +156,21 @@ export const buyTokens = async (tokenAddress, amount, price) => {
   }
 };
 
-// Obtener historial de transacciones de un token
-export const getTokenTransferHistory = async (tokenAddress) => {
+// Obtener historial de transacciones
+export const getTokenTransactions = async (tokenAddress, userAddress) => {
   try {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const tokenABI = [
-      {
-        "anonymous": false,
-        "inputs": [
-          { "indexed": true, "name": "from", "type": "address" },
-          { "indexed": true, "name": "to", "type": "address" },
-          { "indexed": false, "name": "value", "type": "uint256" }
-        ],
-        "name": "Transfer",
-        "type": "event"
-      }
+
+    // Simulación de historial (esto requeriría acceso a logs on-chain o backend para datos reales)
+    const simulatedTransactions = [
+      { type: "Compra", amount: 10, hash: "0x123..." },
+      { type: "Transferencia", amount: 5, hash: "0x456..." },
+      { type: "Recepción", amount: 3, hash: "0x789..." }
     ];
 
-    const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
-
-    const filter = tokenContract.filters.Transfer();
-    const logs = await provider.getLogs({ ...filter, fromBlock: 0, toBlock: "latest" });
-
-    return logs.map(log => {
-      const parsed = tokenContract.interface.parseLog(log);
-      return {
-        from: parsed.args.from,
-        to: parsed.args.to,
-        value: ethers.utils.formatUnits(parsed.args.value, 18),
-        transactionHash: log.transactionHash
-      };
-    });
+    return simulatedTransactions;
   } catch (error) {
-    console.error("Error al obtener historial de transferencias:", error);
-    return [];
+    console.error("Error al obtener el historial de transacciones:", error);
+    throw error;
   }
 };
