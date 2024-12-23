@@ -1,0 +1,132 @@
+[33mdd3fd34[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Actualización de App.jsx y web3.jsx: Añadida funcionalidad de transferencia y balance
+[33m36ff6eb[m Añadida función transferTokens para transferir tokens
+[33m4772027[m Añadida función getTokenBalance para obtener el balance de tokens
+[33mc8f1f00[m Corregido el uso de ethers.providers.Web3Provider para compatibilidad
+[33m8c40999[m Añadida funcionalidad para consultar balances y transferir tokens
+[33mffbe76a[m Añadida funcionalidad para listar y transferir tokens
+[33m54b37a7[m Actualizado web3.jsx para usar ethers.providers.Web3Provider
+[33m6088ac9[m Corrección del archivo package.json para iniciar en el puerto 3000
+[33m2fc775f[m Agregado script start con puerto 3000
+[33m6b20aac[m Añadido botón para conectar MetaMask y correcciones en App.jsx
+[33m957e990[m Añadido botón Conectar Wallet y ajustes en App.jsx
+[33m2ea7018[m Añadido botón para conectar MetaMask en App.jsx
+[33mf0c3a33[m Añadida conexión a MetaMask y manejo de errores en App.jsx
+[33m450102d[m Actualizada la dirección de la Factory en src/web3.jsx
+[33m78a0eb3[m Ajustes en deploy_factory.js para manejar confirmación de despliegue
+[33m87229a3[m Añadidos mensajes de depuración al script deploy_factory.js
+[33m9c427e1[m Actualizado check-connection.js para verificar la conexión correctamente
+[33m711f2a8[m Ajustado el gas en el despliegue de CPIFinancialFactory
+[33m7b28880[m Código actualizado para desplegar CPIFinancialFactory
+[33mb5c7b45[m Ajuste del gasPrice para la red Polygon
+[33m0b97ab2[m Configuración optimizada de Hardhat para la red Polygon
+[33m04abfab[m Eliminado archivo CPIFinancialToken.sol para evitar confusiones
+[33mfdff0d5[m Renombrado CPIFinancialToken.sol a CPIFinancialFactory.sol para reflejar la Factory correctamente
+[33mdf2b958[m Actualización de CPIFinancialFactory y frontend para gestionar la creación de tokens
+[33m4d5dfd7[m Actualización en App.jsx y web3.jsx para gestionar la creación de tokens
+[33m4354001[m Eliminado deploy.js y CPIFinancialToken.sol para evitar confusión con la Factory
+[33m2f00668[m Añadido formulario para la creación de tokens
+[33mebb9095[m Añadido contrato y configuración ABI a web3.js
+[33m8d9845e[m Actualización de dependencias en package.json y package-lock.json
+[33ma91f2b2[m Corrección de la función de conexión en web3.js
+[33m14d379f[m Conexión inicial a la blockchain desde App.js
+[33m458a876[m Actualización de dependencias en package.json y package-lock.json
+[33m4ce8d46[m Archivo web3.js configurado correctamente
+[33m3f54b3f[m Estructura inicial completada para la DApp
+[33m1086f6e[m Agregar script para transferir tokens desde Hardhat
+[33ma81636c[m Agregar script para transferir tokens desde Hardhat
+[33md573d1d[m Actualización del script de despliegue para crear tokens únicos
+[33m62723cb[m Actualización en hardhat.config.js para activar optimizador y definir rutas de contratos
+[33m1fdadef[m Confirmar cambios en package.json y package-lock.json
+[33md2a9573[m Actualización: Gestión dinámica de titulares en CPIFinancialToken
+[33mca960fa[m Actualización: Configuración completa para compilación y despliegue
+[33m7ac8110[m Actualización: Configuración del compilador con optimización deshabilitada
+[33m3779fa6[m Corrección: Alineación de valores en deploy.js con configuración verificada
+[33mda4a610[m Añadido: Script encode-constructor.js correctamente ubicado
+[33mbb6d3d4[m Actualización: Ajuste de configuración del compilador en hardhat.config.js
+[33m491793a[m Actualización: Valores personalizados en deploy.js
+[33mebbb2d3[m Añadido: Script para el despliegue de CPIFinancialToken en Polygon
+[33m8852297[m Actualización: Dependencias ajustadas para compatibilidad con Hardhat y ethers.js
+[33mb89f7c9[m Actualización: Mejoras en CPIFinancialToken con rastreo dinámico de titulares y función de compra
+[33m48c80a0[m Añadido: Script para verificar la conexión con la red Polygon
+[33m18520ff[m Actualización: Configuración de Hardhat y ajustes en dependencias
+[33m4e62d4e[m Corrección: Eliminación de errores y simplificación en la función getTokenHolders
+[33m3f43ced[m Rediseño: Rastreo de titulares y distribución simplificada
+[33m314ed08[m Corrección: Declaración y retorno correcto de getTokenHolders
+[33m8bff39d[m Corrección: Inicialización correcta del array holders en getTokenHolders
+[33m82cab0b[m Restauración: Lock.sol restaurado al proyecto
+[33m6986876[m Corrección: Declaración e inicialización correcta del array holders en getTokenHolders
+[33m1cca7bc[m Actualización: Configuración final de hardhat.config.js
+[33m2734e64[m[33m ([m[1;31morigin/main[m[33m)[m Corrección final: Inicialización y uso correcto de getTokenHolders
+[33m6571f00[m Reinserción: Archivo CPIFinancialToken.sol restaurado
+[33m7a4607f[m Corrección: Función getTokenHolders completamente arreglada
+[33me8e76ff[m Confirmación: Actualización de dependencias finales en package-lock.json y package.json
+[33m87736ae[m Corrección: Declaración e inicialización correcta del array holders en getTokenHolders
+[33m1b0c7a9[m Corrección: Declaración e inicialización correcta de holders
+[33mfa96d0f[m Confirmación: Actualización final de dependencias en package.json y package-lock.json
+[33mef3f072[m Corrección final: Declaración e inicialización del array holders
+[33m2b134a6[m Corrección: Declaración e inicialización del array holders en getTokenHolders
+[33mf5afad2[m Confirmación: Actualización de dependencias en package-lock.json y package.json
+[33mf315e57[m Actualización: Cambios en dependencias (package-lock.json y package.json)
+[33mda963e7[m Corrección final: Declaración e inicialización correcta de holders
+[33m560cfc5[m Corrección definitiva: Inicialización correcta del array holders
+[33m55f6be8[m Corrección: Limpieza de comentarios y array holders en getTokenHolders
+[33mef24d8f[m Corrección definitiva: Declaración del array holders y estructura.
+[33m135f1c1[m Corrección completa: Inicialización de holders y estructura del contrato
+[33mb1e8e8c[m Corrección definitiva: Inicialización de holders en getTokenHolders
+[33m41199b9[m Corrección definitiva: Inicialización del array holders y estructura del contrato
+[33m1b83c1e[m Corrección: Inicialización correcta del array holders en getTokenHolders
+[33m0a04f28[m Corrección final: Declaración y uso de array holders en getTokenHolders
+[33m8cde101[m Corrección final: Inicialización correcta de array holders en getTokenHolders
+[33m5c7192b[m Corrección final: Inicialización del array holders en getTokenHolders
+[33m74a7fe8[m Corrección final: Declaración y asignación del array holders
+[33mb7409ed[m Corrección: Ajuste completo en getTokenHolders y estructura del contrato
+[33m599e8be[m Corrección: Inicialización del array holders en getTokenHolders
+[33mc7f2813[m Corrección: Inicialización del array holders en getTokenHolders
+[33m71d20e2[m Corrección: Inicialización del array holders en getTokenHolders
+[33m58ac655[m Corrección: Inicialización de array holders en getTokenHolders
+[33madb5de1[m Corrección: Declaración del array holders en getTokenHolders
+[33mede816a[m Corrección: Declaración explícita del array holders en getTokenHolders
+[33mddeb75d[m Corrección: Ajustes en la función getTokenHolders
+[33m9eeb394[m Actualización: Ajustes en CPIFinancialToken.sol para importar correctamente AutomationCompatible
+[33m4cad9ef[m Actualización: instalación de @chainlink/contracts y ajustes de dependencias
+[33mf363af0[m Actualización del contrato CPIFinancialToken y dependencias necesarias
+[33m5854b68[m Actualización: Mejora en gestión de titulares de tokens y distribución de ingresos
+[33mc159237[m Actualización con dirección de USDC en Polygon
+[33ma33b649[m Actualización de web3.jsx con nueva dirección del contrato desplegado
+[33md3f7957[m Corrección: paso del administrador al constructor Ownable con argumento
+[33mdfbb84d[m Funcionalidad para listar tokens creados
+[33m6f8e493[m Corrección del constructor de CPIFinancialToken
+[33m29ac3b1[m Añadida funcionalidad para definir cantidad inicial al crear tokens
+[33m186128e[m Actualización de App.jsx y web3.jsx para añadir funcionalidad de creación de tokens
+[33m9aec3fd[m Corrección de deploy.js para compatibilidad con Ethers.js 6
+[33mc65bf9a[m Corrección del script de despliegue para aceptar los argumentos correctos
+[33m40f7fac[m Corrección: paso del administrador al constructor Ownable
+[33m4e2a3fe[m Corrección y actualización de CPIFinancialToken.sol con funcionalidad de fábrica
+[33m4b8a628[m Actualización de CPIFinancialToken.sol para permitir la creación de tokens empresariales
+[33m1410d7b[m Corrección de duplicado en exportaciones y ajustes en web3.jsx
+[33mc844200[m Actualización de web3.jsx con la función transferTokens y mejoras
+[33m7f84678[m Corrección en web3.jsx para exportar funciones correctamente
+[33m7de8226[m Corrección en App.jsx para manejar BigInt y mostrar datos correctamente
+[33ma479975[m Mejora de la interfaz en App.jsx con formato para balances y suministro
+[33m212044a[m Actualización de App.jsx para interacción con el contrato
+[33m4414ce7[m Actualización de web3.jsx para interacción con el contrato
+[33md9e1150[m Corrección para despliegue con Ethers.js 6.x
+[33mdb646b3[m Corrección del constructor de CPIFinancialToken y ajustes en deploy.js
+[33m7f392aa[m Corrección completa de CPIFinancialToken.sol
+[33m07412e0[m Actualización de CPIFinancialToken.sol y deploy.js para corrección de constructor
+[33me128d88[m Confirmación de cambios en App.jsx
+[33m5cb138c[m Corrección del script deploy.js para despliegue con parámetros
+[33m821e1a3[m Corrección de deploy.js para despliegue del contrato
+[33m89cb302[m Actualización de CPIFinancialToken.sol y deploy.js para despliegue
+[33mf8ae89a[m Actualización de App.jsx y deploy.js con ajustes para despliegue
+[33m2acdc0a[m Actualización de deploy.js y App.jsx para soporte de nuevas funciones
+[33md8e482d[m Actualización del diseño de App.jsx
+[33m0d12ca5[m Refactorización de App.jsx para mejorar la visualización y funcionalidad
+[33m3d5706a[m Actualización de web3.jsx para compatibilidad con ethers.js v6
+[33mfa094ff[m Actualización de App.jsx y main.jsx para integrar funciones Web3
+[33m9d4253f[m Configuración de archivos para interacción Web3 y ajustes finales de la DApp
+[33m96f1fb3[m Mensaje que describa los cambios realizados
+[33ma31cd98[m Aplicando cambios pendientes
+[33mfd51b56[m Confirmando archivos modificados
+[33m4063221[m Corrigiendo index.html y preparando nueva compilación
+[33m07c3cb3[m Primer commit
