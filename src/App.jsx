@@ -31,7 +31,7 @@ function App() {
     }
   };
 
-  // Crear un nuevo token
+  // Crear un nuevo token (Solo administrador)
   const handleCreateToken = async () => {
     try {
       setMessage("Creando token...");
@@ -69,7 +69,7 @@ function App() {
   // Consultar balance de un token
   const checkBalance = async () => {
     try {
-      const balance = await getTokenBalance(selectedToken);
+      const balance = await getTokenBalance(selectedToken, walletAddress);
       setTokenBalance(balance);
     } catch (error) {
       console.error("Error al consultar el balance:", error);
@@ -88,24 +88,28 @@ function App() {
       <button onClick={connectWallet} style={{ marginBottom: "1rem", padding: "0.5rem 1rem" }}>
         {walletAddress ? `Wallet Conectada: ${walletAddress}` : "Conectar Wallet"}
       </button>
-      <h2>Crear un nuevo token</h2>
-      <div style={{ marginBottom: "1rem" }}>
-        <label>Nombre del token:</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
-      <div style={{ marginBottom: "1rem" }}>
-        <label>Símbolo del token:</label>
-        <input type="text" value={symbol} onChange={(e) => setSymbol(e.target.value)} />
-      </div>
-      <div style={{ marginBottom: "1rem" }}>
-        <label>Suministro inicial:</label>
-        <input type="number" value={initialSupply} onChange={(e) => setInitialSupply(e.target.value)} />
-      </div>
-      <button onClick={handleCreateToken} style={{ padding: "0.5rem 1rem" }}>
-        Crear Token
-      </button>
-      <p>{message}</p>
-      <h2>Tokens creados</h2>
+      {walletAddress === "0xc29C9bd0BC978dFCAd34Be1AE66D8E785C152c55" ? (
+        <>
+          <h2>Crear un nuevo token</h2>
+          <div style={{ marginBottom: "1rem" }}>
+            <label>Nombre del token:</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div style={{ marginBottom: "1rem" }}>
+            <label>Símbolo del token:</label>
+            <input type="text" value={symbol} onChange={(e) => setSymbol(e.target.value)} />
+          </div>
+          <div style={{ marginBottom: "1rem" }}>
+            <label>Suministro inicial:</label>
+            <input type="number" value={initialSupply} onChange={(e) => setInitialSupply(e.target.value)} />
+          </div>
+          <button onClick={handleCreateToken} style={{ padding: "0.5rem 1rem" }}>
+            Crear Token
+          </button>
+        </>
+      ) : (
+        <h2>Tokens creados</h2>
+      )}
       <ul>
         {tokens.map((token, index) => (
           <li key={index}>
