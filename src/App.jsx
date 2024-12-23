@@ -2,22 +2,19 @@ import React, { useState, useEffect } from "react";
 import { createToken, getCreatedTokens, transferTokens, getTokenBalance, buyTokens, getTokenTransactions } from "./web3.jsx";
 
 function App() {
-  const [name, setName] = useState("");
-  const [symbol, setSymbol] = useState("");
-  const [initialSupply, setInitialSupply] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [message, setMessage] = useState("");
   const [tokens, setTokens] = useState([]);
   const [selectedToken, setSelectedToken] = useState("");
-  const [transferAddress, setTransferAddress] = useState("");
-  const [transferAmount, setTransferAmount] = useState("");
   const [tokenBalance, setTokenBalance] = useState("");
   const [buyAmount, setBuyAmount] = useState("");
-  const [transactions, setTransactions] = useState([]); // Historial de transacciones
+  const [transactions, setTransactions] = useState([]);
+  const [transferAddress, setTransferAddress] = useState("");
+  const [transferAmount, setTransferAmount] = useState("");
 
   const TOKEN_PRICE = 0.05; // Precio fijo: 1 Token = 0.05 USDC
 
-  // Función para conectar MetaMask
+  // Conectar MetaMask
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
@@ -60,7 +57,8 @@ function App() {
       setMessage("Procesando compra...");
       const txHash = await buyTokens(selectedToken, buyAmount, TOKEN_PRICE);
       setMessage(`¡Compra exitosa! Hash de la transacción: ${txHash}`);
-      fetchTransactions(); // Actualizar historial
+      checkBalance();
+      fetchTransactions();
     } catch (error) {
       console.error("Error al comprar tokens:", error);
       setMessage("Error al comprar tokens.");
@@ -83,14 +81,15 @@ function App() {
       setMessage("Realizando transferencia...");
       const txHash = await transferTokens(selectedToken, transferAddress, transferAmount);
       setMessage(`¡Transferencia exitosa! Hash de la transacción: ${txHash}`);
-      fetchTransactions(); // Actualizar historial
+      fetchTransactions();
+      checkBalance();
     } catch (error) {
       console.error("Error al transferir tokens:", error);
       setMessage("Error al transferir tokens.");
     }
   };
 
-  // Consultar balance de un token
+  // Consultar balance
   const checkBalance = async () => {
     try {
       if (!selectedToken) {
@@ -120,46 +119,55 @@ function App() {
     }
   };
 
-  // Obtener lista de tokens al cargar la página
+  // Cargar tokens al inicio
   useEffect(() => {
     fetchTokens();
   }, []);
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", padding: "2rem", background: "black", color: "white" }}>
-      {/* Encabezado con el logo */}
+      {/* Encabezado con logo */}
       <div style={{ marginBottom: "2rem" }}>
-        <img src="/sfi-logo.jpeg" alt="Logo de SFI" style={{ height: "120px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(255, 215, 0, 0.5)" }} />
+        <img
+          src="/sfi-logo.jpeg"
+          alt="Logo de SFI"
+          style={{ height: "120px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(255, 215, 0, 0.5)" }}
+        />
         <h1 style={{ color: "gold", marginTop: "1rem" }}>¡Bienvenido a CPI Financial DApp!</h1>
       </div>
-      
+
       {/* Conectar Wallet */}
-      <button onClick={connectWallet} style={{ marginBottom: "1rem", padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}>
+      <button
+        onClick={connectWallet}
+        style={{ marginBottom: "1rem", padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
+      >
         {walletAddress ? `Wallet Conectada: ${walletAddress}` : "Conectar Wallet"}
       </button>
 
-      {/* Compra de Tokens */}
+      {/* Comprar Tokens */}
       <h2 style={{ color: "gold" }}>Comprar Tokens</h2>
       <p>Precio fijo: 1 Token = {TOKEN_PRICE} USDC</p>
       <div>
-        <label>Cantidad de tokens a comprar:</label>
         <input
           type="number"
           value={buyAmount}
           onChange={(e) => setBuyAmount(e.target.value)}
           style={{ margin: "0.5rem", padding: "0.3rem" }}
         />
+        <button
+          onClick={handleBuyTokens}
+          style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
+        >
+          Comprar Tokens
+        </button>
       </div>
-      <button onClick={handleBuyTokens} style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}>
-        Comprar Tokens
-      </button>
       <p>{message}</p>
 
-      {/* Selección de Tokens */}
+      {/* Lista de Tokens */}
       <h2 style={{ color: "gold" }}>Selecciona un token:</h2>
       <ul>
         {tokens.map((token, index) => (
-          <li key={index} style={{ listStyle: "none", marginBottom: "0.5rem" }}>
+          <li key={index}>
             {token}{" "}
             <button
               onClick={() => setSelectedToken(token)}
@@ -177,50 +185,40 @@ function App() {
         ))}
       </ul>
 
-      {/* Operaciones con Tokens */}
+      {/* Operaciones */}
       {selectedToken && (
-        <div style={{ marginTop: "2rem" }}>
+        <div>
           <h2 style={{ color: "gold" }}>Operaciones con el token seleccionado</h2>
-          <p>Dirección del token: {selectedToken}</p>
-          <button onClick={checkBalance} style={{ padding: "0.5rem 1rem", marginBottom: "1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}>
+          <button onClick={checkBalance} style={{ marginBottom: "1rem" }}>
             Consultar balance
           </button>
           <p>Balance: {tokenBalance}</p>
 
-          {/* Sección de Transferir Tokens */}
-          <h3 style={{ color: "gold" }}>Transferir tokens</h3>
+          {/* Transferir Tokens */}
           <div>
-            <label>Dirección de destino:</label>
+            <h3>Transferir tokens</h3>
             <input
               type="text"
+              placeholder="Dirección de destino"
               value={transferAddress}
               onChange={(e) => setTransferAddress(e.target.value)}
-              style={{ margin: "0.5rem", padding: "0.3rem" }}
+              style={{ margin: "0.5rem" }}
             />
-          </div>
-          <div>
-            <label>Cantidad a transferir:</label>
             <input
               type="number"
+              placeholder="Cantidad a transferir"
               value={transferAmount}
               onChange={(e) => setTransferAmount(e.target.value)}
-              style={{ margin: "0.5rem", padding: "0.3rem" }}
+              style={{ margin: "0.5rem" }}
             />
+            <button onClick={handleTransfer}>Transferir</button>
           </div>
-          <button
-            onClick={handleTransfer}
-            style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
-          >
-            Transferir
-          </button>
 
-          {/* Historial de transacciones */}
-          <h3 style={{ color: "gold" }}>Historial de transacciones</h3>
+          {/* Historial */}
+          <h3>Historial de transacciones</h3>
           <ul>
             {transactions.map((tx, index) => (
-              <li key={index}>
-                {tx.type}: {tx.amount} tokens - Hash: {tx.hash}
-              </li>
+              <li key={index}>{tx.type}: {tx.amount} tokens - Hash: {tx.hash}</li>
             ))}
           </ul>
         </div>
