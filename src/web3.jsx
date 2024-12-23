@@ -2,6 +2,8 @@ import { ethers } from "ethers";
 
 // Dirección del contrato Factory y ABI
 const factoryAddress = "0x4A95cEe1C8f20dd3982295271369CA0CE8f5E212"; // Actualiza si cambia
+const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Dirección del contrato USDC en Polygon
+
 const factoryABI = [
   {
     "inputs": [
@@ -141,9 +143,7 @@ export const buyTokens = async (tokenAddress, amount, price) => {
       }
     ];
 
-    const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Dirección de USDC en Polygon
     const usdcContract = new ethers.Contract(usdcAddress, usdcABI, signer);
-
     const totalCost = ethers.utils.parseUnits((amount * price).toString(), 6); // USDC usa 6 decimales
 
     const tx = await usdcContract.transfer(tokenAddress, totalCost);

@@ -12,7 +12,6 @@ function App() {
   const [transferAddress, setTransferAddress] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
   const [tokenBalance, setTokenBalance] = useState("");
-  const [usdcBalance, setUsdcBalance] = useState("");
   const [buyAmount, setBuyAmount] = useState("");
 
   const TOKEN_PRICE = 0.05; // Precio fijo: 1 Token = 0.05 USDC
@@ -24,78 +23,13 @@ function App() {
         const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
         setWalletAddress(accounts[0]);
         setMessage("¡Wallet conectada exitosamente!");
-        await fetchBalances();
+        fetchTokens();
       } catch (error) {
         console.error("Error al conectar MetaMask:", error);
         setMessage("Error al conectar MetaMask.");
       }
     } else {
       setMessage("MetaMask no está instalada.");
-    }
-  };
-
-  // Obtener balances de tokens y USDC
-  const fetchBalances = async () => {
-    try {
-      if (selectedToken) {
-        const balance = await getTokenBalance(selectedToken, walletAddress);
-        setTokenBalance(balance);
-      }
-      const usdc = await getTokenBalance("<USDC_CONTRACT_ADDRESS>", walletAddress); // Reemplaza con la dirección del contrato USDC
-      setUsdcBalance(usdc);
-    } catch (error) {
-      console.error("Error al obtener balances:", error);
-      setMessage("Error al obtener balances.");
-    }
-  };
-
-  // Crear un nuevo token
-  const handleCreateToken = async () => {
-    try {
-      setMessage("Creando token...");
-      const txHash = await createToken(name, symbol, walletAddress, "<USDC_CONTRACT_ADDRESS>", initialSupply);
-      setMessage(`¡Token creado con éxito! Hash de la transacción: ${txHash}`);
-      await fetchTokens(); // Actualizar lista de tokens
-    } catch (error) {
-      console.error("Error al crear el token:", error);
-      setMessage("Error al crear el token.");
-    }
-  };
-
-  // Comprar tokens
-  const handleBuyTokens = async () => {
-    try {
-      setMessage("Procesando compra...");
-      const txHash = await buyTokens(buyAmount, TOKEN_PRICE, walletAddress);
-      setMessage(`¡Compra exitosa! Hash de la transacción: ${txHash}`);
-      await fetchBalances(); // Actualizar balances
-    } catch (error) {
-      console.error("Error al comprar tokens:", error);
-      setMessage("Error al comprar tokens.");
-    }
-  };
-
-  // Transferir tokens
-  const handleTransfer = async () => {
-    try {
-      setMessage("Realizando transferencia...");
-      const txHash = await transferTokens(selectedToken, transferAddress, transferAmount);
-      setMessage(`¡Transferencia exitosa! Hash de la transacción: ${txHash}`);
-      await fetchBalances();
-    } catch (error) {
-      console.error("Error al transferir tokens:", error);
-      setMessage("Error al transferir tokens.");
-    }
-  };
-
-  // Consultar balance de un token
-  const checkBalance = async () => {
-    try {
-      const balance = await getTokenBalance(selectedToken, walletAddress);
-      setTokenBalance(balance);
-    } catch (error) {
-      console.error("Error al consultar el balance:", error);
-      setMessage("Error al consultar el balance.");
     }
   };
 
@@ -106,6 +40,65 @@ function App() {
       setTokens(createdTokens);
     } catch (error) {
       console.error("Error al obtener los tokens creados:", error);
+    }
+  };
+
+  // Comprar tokens
+  const handleBuyTokens = async () => {
+    if (!selectedToken) {
+      setMessage("Por favor, selecciona un token antes de comprar.");
+      return;
+    }
+
+    if (buyAmount <= 0) {
+      setMessage("Por favor, ingresa una cantidad válida para comprar.");
+      return;
+    }
+
+    try {
+      setMessage("Procesando compra...");
+      const txHash = await buyTokens(selectedToken, buyAmount, TOKEN_PRICE);
+      setMessage(`¡Compra exitosa! Hash de la transacción: ${txHash}`);
+    } catch (error) {
+      console.error("Error al comprar tokens:", error);
+      setMessage("Error al comprar tokens.");
+    }
+  };
+
+  // Transferir tokens
+  const handleTransfer = async () => {
+    if (!selectedToken) {
+      setMessage("Por favor, selecciona un token antes de transferir.");
+      return;
+    }
+
+    if (!transferAddress || transferAmount <= 0) {
+      setMessage("Por favor, ingresa una dirección de destino y una cantidad válida.");
+      return;
+    }
+
+    try {
+      setMessage("Realizando transferencia...");
+      const txHash = await transferTokens(selectedToken, transferAddress, transferAmount);
+      setMessage(`¡Transferencia exitosa! Hash de la transacción: ${txHash}`);
+    } catch (error) {
+      console.error("Error al transferir tokens:", error);
+      setMessage("Error al transferir tokens.");
+    }
+  };
+
+  // Consultar balance de un token
+  const checkBalance = async () => {
+    try {
+      if (!selectedToken) {
+        setMessage("Selecciona un token para consultar su balance.");
+        return;
+      }
+      const balance = await getTokenBalance(selectedToken, walletAddress);
+      setTokenBalance(balance);
+    } catch (error) {
+      console.error("Error al consultar el balance:", error);
+      setMessage("Error al consultar el balance.");
     }
   };
 
