@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { createToken } from "./web3.jsx";
+import React, { useState, useEffect } from "react";
+import { createToken, getCreatedTokens, transferTokens, getTokenBalance } from "./web3.jsx";
 
 function App() {
   const [name, setName] = useState("");
@@ -7,6 +7,11 @@ function App() {
   const [initialSupply, setInitialSupply] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [message, setMessage] = useState("");
+  const [tokens, setTokens] = useState([]);
+  const [selectedToken, setSelectedToken] = useState("");
+  const [transferAddress, setTransferAddress] = useState("");
+  const [transferAmount, setTransferAmount] = useState("");
+  const [tokenBalance, setTokenBalance] = useState("");
 
   // Función para conectar MetaMask
   const connectWallet = async () => {
@@ -22,25 +27,60 @@ function App() {
         setMessage("Error al conectar MetaMask.");
       }
     } else {
-      setMessage("MetaMask no está instalada. Por favor, instálala para usar esta DApp.");
+      setMessage("MetaMask no está instalada.");
     }
   };
 
+  // Crear un nuevo token
   const handleCreateToken = async () => {
-    if (!walletAddress) {
-      setMessage("Conecta tu wallet antes de crear un token.");
-      return;
-    }
     try {
       setMessage("Creando token...");
-      const usdcContractAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Reemplaza con la dirección real del contrato USDC
-      const txHash = await createToken(name, symbol, walletAddress, usdcContractAddress, initialSupply);
+      const txHash = await createToken(name, symbol, walletAddress, "<USDC_CONTRACT_ADDRESS>", initialSupply);
       setMessage(`¡Token creado con éxito! Hash de la transacción: ${txHash}`);
+      await fetchTokens(); // Actualizar lista de tokens
     } catch (error) {
       console.error("Error al crear el token:", error);
-      setMessage("Error al crear el token. Verifica los datos y vuelve a intentarlo.");
+      setMessage("Error al crear el token.");
     }
   };
+
+  // Obtener tokens creados
+  const fetchTokens = async () => {
+    try {
+      const createdTokens = await getCreatedTokens();
+      setTokens(createdTokens);
+    } catch (error) {
+      console.error("Error al obtener los tokens creados:", error);
+    }
+  };
+
+  // Transferir tokens
+  const handleTransfer = async () => {
+    try {
+      setMessage("Realizando transferencia...");
+      const txHash = await transferTokens(selectedToken, transferAddress, transferAmount);
+      setMessage(`¡Transferencia exitosa! Hash de la transacción: ${txHash}`);
+    } catch (error) {
+      console.error("Error al transferir tokens:", error);
+      setMessage("Error al transferir tokens.");
+    }
+  };
+
+  // Consultar balance de un token
+  const checkBalance = async () => {
+    try {
+      const balance = await getTokenBalance(selectedToken);
+      setTokenBalance(balance);
+    } catch (error) {
+      console.error("Error al consultar el balance:", error);
+      setMessage("Error al consultar el balance.");
+    }
+  };
+
+  // Obtener lista de tokens al cargar la página
+  useEffect(() => {
+    fetchTokens();
+  }, []);
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", padding: "2rem" }}>
@@ -65,6 +105,33 @@ function App() {
         Crear Token
       </button>
       <p>{message}</p>
+      <h2>Tokens creados</h2>
+      <ul>
+        {tokens.map((token, index) => (
+          <li key={index}>
+            {token}{" "}
+            <button onClick={() => setSelectedToken(token)}>Seleccionar</button>
+          </li>
+        ))}
+      </ul>
+      {selectedToken && (
+        <>
+          <h2>Operaciones con el token seleccionado</h2>
+          <p>Dirección del token: {selectedToken}</p>
+          <button onClick={checkBalance}>Consultar balance</button>
+          <p>Balance: {tokenBalance}</p>
+          <h3>Transferir tokens</h3>
+          <div>
+            <label>Dirección de destino:</label>
+            <input type="text" value={transferAddress} onChange={(e) => setTransferAddress(e.target.value)} />
+          </div>
+          <div>
+            <label>Cantidad a transferir:</label>
+            <input type="number" value={transferAmount} onChange={(e) => setTransferAmount(e.target.value)} />
+          </div>
+          <button onClick={handleTransfer}>Transferir</button>
+        </>
+      )}
     </div>
   );
 }
