@@ -25,7 +25,6 @@ function App() {
         setWalletAddress(accounts[0]);
         setMessage("¡Wallet conectada exitosamente!");
         fetchTokens();
-        if (selectedToken) await updateBalance();
       } catch (error) {
         console.error("Error al conectar MetaMask:", error);
         setMessage("Error al conectar MetaMask.");
@@ -45,18 +44,6 @@ function App() {
     }
   };
 
-  // Actualizar balance de token seleccionado
-  const updateBalance = async () => {
-    try {
-      if (!selectedToken) return;
-      const balance = await getTokenBalance(selectedToken, walletAddress);
-      setTokenBalance(balance);
-    } catch (error) {
-      console.error("Error al actualizar el balance:", error);
-      setMessage("Error al actualizar el balance.");
-    }
-  };
-
   // Comprar tokens
   const handleBuyTokens = async () => {
     if (!selectedToken) {
@@ -73,7 +60,6 @@ function App() {
       setMessage("Procesando compra...");
       const txHash = await buyTokens(selectedToken, buyAmount, TOKEN_PRICE);
       setMessage(`¡Compra exitosa! Hash de la transacción: ${txHash}`);
-      await updateBalance(); // Actualizar balance después de comprar
       fetchTransactions(); // Actualizar historial
     } catch (error) {
       console.error("Error al comprar tokens:", error);
@@ -97,7 +83,6 @@ function App() {
       setMessage("Realizando transferencia...");
       const txHash = await transferTokens(selectedToken, transferAddress, transferAmount);
       setMessage(`¡Transferencia exitosa! Hash de la transacción: ${txHash}`);
-      await updateBalance(); // Actualizar balance después de transferir
       fetchTransactions(); // Actualizar historial
     } catch (error) {
       console.error("Error al transferir tokens:", error);
@@ -135,22 +120,26 @@ function App() {
     }
   };
 
-  // Obtener lista de tokens y balance al cargar la página
+  // Obtener lista de tokens al cargar la página
   useEffect(() => {
     fetchTokens();
   }, []);
 
-  useEffect(() => {
-    updateBalance();
-  }, [selectedToken]);
-
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", padding: "2rem" }}>
-      <h1>¡Bienvenido a CPI Financial DApp!</h1>
-      <button onClick={connectWallet} style={{ marginBottom: "1rem", padding: "0.5rem 1rem" }}>
+    <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", padding: "2rem", background: "black", color: "white" }}>
+      {/* Encabezado con el logo */}
+      <div style={{ marginBottom: "2rem" }}>
+        <img src="/sfi-logo.jpeg" alt="SFI Logo" style={{ height: "80px", marginBottom: "1rem" }} />
+        <h1 style={{ color: "gold" }}>¡Bienvenido a CPI Financial DApp!</h1>
+      </div>
+      
+      {/* Conectar Wallet */}
+      <button onClick={connectWallet} style={{ marginBottom: "1rem", padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}>
         {walletAddress ? `Wallet Conectada: ${walletAddress}` : "Conectar Wallet"}
       </button>
-      <h2>Comprar Tokens</h2>
+
+      {/* Compra de Tokens */}
+      <h2 style={{ color: "gold" }}>Comprar Tokens</h2>
       <p>Precio fijo: 1 Token = {TOKEN_PRICE} USDC</p>
       <div>
         <label>Cantidad de tokens a comprar:</label>
@@ -158,41 +147,46 @@ function App() {
           type="number"
           value={buyAmount}
           onChange={(e) => setBuyAmount(e.target.value)}
-          style={{ margin: "0.5rem" }}
+          style={{ margin: "0.5rem", padding: "0.3rem" }}
         />
       </div>
-      <button onClick={handleBuyTokens} style={{ padding: "0.5rem 1rem" }}>
+      <button onClick={handleBuyTokens} style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}>
         Comprar Tokens
       </button>
       <p>{message}</p>
-      <h2>Selecciona un token:</h2>
+
+      {/* Selección de Tokens */}
+      <h2 style={{ color: "gold" }}>Selecciona un token:</h2>
       <ul>
         {tokens.map((token, index) => (
-          <li key={index}>
+          <li key={index} style={{ listStyle: "none", marginBottom: "0.5rem" }}>
             {token}{" "}
-            <button onClick={() => setSelectedToken(token)}>
+            <button
+              onClick={() => setSelectedToken(token)}
+              style={{
+                background: selectedToken === token ? "limegreen" : "gray",
+                color: "white",
+                border: "none",
+                borderRadius: "3px",
+                padding: "0.3rem",
+              }}
+            >
               {selectedToken === token ? "Seleccionado ✅" : "Seleccionar"}
             </button>
           </li>
         ))}
       </ul>
+
+      {/* Operaciones con Tokens */}
       {selectedToken && (
-        <>
-          <h2>Operaciones con el token seleccionado</h2>
+        <div style={{ marginTop: "2rem" }}>
+          <h2 style={{ color: "gold" }}>Operaciones con el token seleccionado</h2>
           <p>Dirección del token: {selectedToken}</p>
-          <button onClick={checkBalance}>Consultar balance</button>
+          <button onClick={checkBalance} style={{ padding: "0.5rem 1rem", marginBottom: "1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}>
+            Consultar balance
+          </button>
           <p>Balance: {tokenBalance}</p>
-          <h3>Transferir tokens</h3>
-          <div>
-            <label>Dirección de destino:</label>
-            <input type="text" value={transferAddress} onChange={(e) => setTransferAddress(e.target.value)} />
-          </div>
-          <div>
-            <label>Cantidad a transferir:</label>
-            <input type="number" value={transferAmount} onChange={(e) => setTransferAmount(e.target.value)} />
-          </div>
-          <button onClick={handleTransfer}>Transferir</button>
-          <h3>Historial de transacciones</h3>
+          <h3 style={{ color: "gold" }}>Historial de transacciones</h3>
           <ul>
             {transactions.map((tx, index) => (
               <li key={index}>
@@ -200,7 +194,7 @@ function App() {
               </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
     </div>
   );
