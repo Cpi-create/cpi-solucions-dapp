@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createToken, getCreatedTokens, transferTokens, getTokenBalance, buyTokens } from "./web3.jsx";
+import { createToken, getCreatedTokens, transferTokens, getTokenBalance, buyTokens, getTokenTransactions } from "./web3.jsx";
 
 function App() {
   const [name, setName] = useState("");
@@ -13,6 +13,7 @@ function App() {
   const [transferAmount, setTransferAmount] = useState("");
   const [tokenBalance, setTokenBalance] = useState("");
   const [buyAmount, setBuyAmount] = useState("");
+  const [transactions, setTransactions] = useState([]); // Historial de transacciones
 
   const TOKEN_PRICE = 0.05; // Precio fijo: 1 Token = 0.05 USDC
 
@@ -23,7 +24,7 @@ function App() {
         const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
         setWalletAddress(accounts[0]);
         setMessage("¡Wallet conectada exitosamente!");
-        await fetchTokens(); // Cargar tokens creados
+        fetchTokens();
       } catch (error) {
         console.error("Error al conectar MetaMask:", error);
         setMessage("Error al conectar MetaMask.");
@@ -59,6 +60,7 @@ function App() {
       setMessage("Procesando compra...");
       const txHash = await buyTokens(selectedToken, buyAmount, TOKEN_PRICE);
       setMessage(`¡Compra exitosa! Hash de la transacción: ${txHash}`);
+      fetchTransactions(); // Actualizar historial
     } catch (error) {
       console.error("Error al comprar tokens:", error);
       setMessage("Error al comprar tokens.");
@@ -81,6 +83,7 @@ function App() {
       setMessage("Realizando transferencia...");
       const txHash = await transferTokens(selectedToken, transferAddress, transferAmount);
       setMessage(`¡Transferencia exitosa! Hash de la transacción: ${txHash}`);
+      fetchTransactions(); // Actualizar historial
     } catch (error) {
       console.error("Error al transferir tokens:", error);
       setMessage("Error al transferir tokens.");
@@ -102,6 +105,21 @@ function App() {
     }
   };
 
+  // Obtener historial de transacciones
+  const fetchTransactions = async () => {
+    try {
+      if (!selectedToken) {
+        setMessage("Selecciona un token para ver su historial de transacciones.");
+        return;
+      }
+      const txs = await getTokenTransactions(selectedToken, walletAddress);
+      setTransactions(txs);
+    } catch (error) {
+      console.error("Error al obtener el historial de transacciones:", error);
+      setMessage("Error al obtener el historial de transacciones.");
+    }
+  };
+
   // Obtener lista de tokens al cargar la página
   useEffect(() => {
     fetchTokens();
@@ -113,7 +131,6 @@ function App() {
       <button onClick={connectWallet} style={{ marginBottom: "1rem", padding: "0.5rem 1rem" }}>
         {walletAddress ? `Wallet Conectada: ${walletAddress}` : "Conectar Wallet"}
       </button>
-
       <h2>Comprar Tokens</h2>
       <p>Precio fijo: 1 Token = {TOKEN_PRICE} USDC</p>
       <div>
@@ -125,33 +142,21 @@ function App() {
           style={{ margin: "0.5rem" }}
         />
       </div>
-      <h3>Selecciona un token:</h3>
+      <button onClick={handleBuyTokens} style={{ padding: "0.5rem 1rem" }}>
+        Comprar Tokens
+      </button>
+      <p>{message}</p>
+      <h2>Selecciona un token:</h2>
       <ul>
         {tokens.map((token, index) => (
           <li key={index}>
             {token}{" "}
             <button onClick={() => setSelectedToken(token)}>
-              {selectedToken === token ? "Seleccionado ✔" : "Seleccionar"}
+              {selectedToken === token ? "Seleccionado ✅" : "Seleccionar"}
             </button>
           </li>
         ))}
       </ul>
-      <button onClick={handleBuyTokens} style={{ padding: "0.5rem 1rem" }}>
-        Comprar Tokens
-      </button>
-
-      <p>{message}</p>
-
-      <h2>Tokens creados</h2>
-      <ul>
-        {tokens.map((token, index) => (
-          <li key={index}>
-            {token}{" "}
-            <button onClick={() => setSelectedToken(token)}>Seleccionar</button>
-          </li>
-        ))}
-      </ul>
-
       {selectedToken && (
         <>
           <h2>Operaciones con el token seleccionado</h2>
@@ -168,6 +173,14 @@ function App() {
             <input type="number" value={transferAmount} onChange={(e) => setTransferAmount(e.target.value)} />
           </div>
           <button onClick={handleTransfer}>Transferir</button>
+          <h3>Historial de transacciones</h3>
+          <ul>
+            {transactions.map((tx, index) => (
+              <li key={index}>
+                {tx.type}: {tx.amount} tokens - Hash: {tx.hash}
+              </li>
+            ))}
+          </ul>
         </>
       )}
     </div>

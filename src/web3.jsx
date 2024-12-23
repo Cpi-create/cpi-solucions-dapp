@@ -155,3 +155,40 @@ export const buyTokens = async (tokenAddress, amount, price) => {
     throw error;
   }
 };
+
+// Obtener historial de transacciones de un token
+export const getTokenTransferHistory = async (tokenAddress) => {
+  try {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const tokenABI = [
+      {
+        "anonymous": false,
+        "inputs": [
+          { "indexed": true, "name": "from", "type": "address" },
+          { "indexed": true, "name": "to", "type": "address" },
+          { "indexed": false, "name": "value", "type": "uint256" }
+        ],
+        "name": "Transfer",
+        "type": "event"
+      }
+    ];
+
+    const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
+
+    const filter = tokenContract.filters.Transfer();
+    const logs = await provider.getLogs({ ...filter, fromBlock: 0, toBlock: "latest" });
+
+    return logs.map(log => {
+      const parsed = tokenContract.interface.parseLog(log);
+      return {
+        from: parsed.args.from,
+        to: parsed.args.to,
+        value: ethers.utils.formatUnits(parsed.args.value, 18),
+        transactionHash: log.transactionHash
+      };
+    });
+  } catch (error) {
+    console.error("Error al obtener historial de transferencias:", error);
+    return [];
+  }
+};
