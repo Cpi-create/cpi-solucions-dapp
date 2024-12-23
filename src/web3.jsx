@@ -28,8 +28,8 @@ const factoryABI = [
 // Función para crear un nuevo token
 export const createToken = async (name, symbol, admin, usdcToken, initialSupply) => {
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum); // Conexión a la wallet
-    const signer = await provider.getSigner(); // Usuario conectado
+    const provider = new ethers.providers.Web3Provider(window.ethereum); // Configuración para ethers@5
+    const signer = provider.getSigner(); // Obtenemos el firmante (cuenta conectada)
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, signer);
 
     // Llamada a la función createToken del contrato
@@ -46,7 +46,7 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
 // Función para obtener los tokens creados
 export const getCreatedTokens = async () => {
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum); // Configuración para ethers@5
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
 
     const tokens = await factoryContract.getCreatedTokens();
