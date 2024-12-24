@@ -37,6 +37,7 @@ const factoryABI = [
 // Crear un token
 export const createToken = async (name, symbol, admin, usdcToken, initialSupply) => {
   try {
+    console.log("Creando token...");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, signer);
@@ -47,6 +48,7 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
 
     const tx = await factoryContract.createToken(name, symbol, admin, usdcToken, initialSupply);
     await tx.wait();
+    console.log("Token creado exitosamente, hash de transacción:", tx.hash);
     return tx.hash;
   } catch (error) {
     console.error("Error al crear el token:", error);
@@ -57,10 +59,13 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
 // Obtener tokens creados
 export const getCreatedTokens = async () => {
   try {
+    console.log("Obteniendo tokens creados...");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
 
-    return await factoryContract.getCreatedTokens();
+    const tokens = await factoryContract.getCreatedTokens();
+    console.log("Tokens creados:", tokens);
+    return tokens;
   } catch (error) {
     console.error("Error al obtener los tokens creados:", error);
     return [];
@@ -70,6 +75,7 @@ export const getCreatedTokens = async () => {
 // Consultar balance de un token
 export const getTokenBalance = async (tokenAddress, userAddress) => {
   try {
+    console.log(`Consultando balance de ${userAddress} en el token ${tokenAddress}...`);
     if (!ethers.utils.isAddress(tokenAddress) || !ethers.utils.isAddress(userAddress)) {
       throw new Error("Dirección inválida para el token o usuario.");
     }
@@ -87,6 +93,7 @@ export const getTokenBalance = async (tokenAddress, userAddress) => {
 
     const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
     const balance = await tokenContract.balanceOf(userAddress);
+    console.log("Balance obtenido:", ethers.utils.formatUnits(balance, 18));
     return ethers.utils.formatUnits(balance, 18);
   } catch (error) {
     console.error("Error al obtener el balance del token:", error);
@@ -97,6 +104,7 @@ export const getTokenBalance = async (tokenAddress, userAddress) => {
 // Transferir tokens
 export const transferTokens = async (tokenAddress, toAddress, amount) => {
   try {
+    console.log(`Transfiriendo ${amount} tokens desde ${tokenAddress} a ${toAddress}...`);
     if (!ethers.utils.isAddress(tokenAddress) || !ethers.utils.isAddress(toAddress)) {
       throw new Error("Dirección inválida para el token o destino.");
     }
@@ -121,6 +129,7 @@ export const transferTokens = async (tokenAddress, toAddress, amount) => {
 
     const tx = await tokenContract.transfer(toAddress, formattedAmount);
     await tx.wait();
+    console.log("Transferencia exitosa, hash de transacción:", tx.hash);
     return tx.hash;
   } catch (error) {
     console.error("Error al transferir tokens:", error);
@@ -131,6 +140,7 @@ export const transferTokens = async (tokenAddress, toAddress, amount) => {
 // Comprar tokens
 export const buyTokens = async (tokenAddress, amount, price) => {
   try {
+    console.log(`Comprando ${amount} tokens a un precio de ${price} USDC por token...`);
     if (!ethers.utils.isAddress(tokenAddress)) {
       throw new Error("Dirección de token inválida.");
     }
@@ -156,6 +166,7 @@ export const buyTokens = async (tokenAddress, amount, price) => {
     const tx = await usdcContract.transfer(tokenAddress, totalCost);
     await tx.wait();
 
+    console.log("Compra exitosa, hash de transacción:", tx.hash);
     return tx.hash;
   } catch (error) {
     console.error("Error al comprar tokens:", error);
@@ -166,15 +177,16 @@ export const buyTokens = async (tokenAddress, amount, price) => {
 // Obtener historial de transacciones
 export const getTokenTransactions = async (tokenAddress, userAddress) => {
   try {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    console.log(`Obteniendo historial de transacciones para el token ${tokenAddress} y usuario ${userAddress}...`);
 
-    // Simulación de historial (esto requeriría acceso a logs on-chain o backend para datos reales)
+    // Simulación de historial
     const simulatedTransactions = [
       { type: "Compra", amount: 10, hash: "0x123..." },
       { type: "Transferencia", amount: 5, hash: "0x456..." },
       { type: "Recepción", amount: 3, hash: "0x789..." }
     ];
 
+    console.log("Historial simulado:", simulatedTransactions);
     return simulatedTransactions;
   } catch (error) {
     console.error("Error al obtener el historial de transacciones:", error);
@@ -183,11 +195,14 @@ export const getTokenTransactions = async (tokenAddress, userAddress) => {
 };
 
 // Verificar si el usuario es administrador
-export const isAdmin = async (userAddress, factoryAddress) => {
+export const isAdmin = async (userAddress) => {
   try {
+    console.log(`Verificando si el usuario ${userAddress} es administrador...`);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
-    return await factoryContract.isAdmin(userAddress);
+    const result = await factoryContract.isAdmin(userAddress);
+    console.log("¿Es administrador?", result);
+    return result;
   } catch (error) {
     console.error("Error al verificar administrador:", error);
     return false;
