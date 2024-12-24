@@ -11,7 +11,7 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [transferAddress, setTransferAddress] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
-  const [isCreator, setIsCreator] = useState(false); // Estado para la vista del creador
+  const [isCreator, setIsCreator] = useState(false); // Estado para determinar si es creador
   const [name, setName] = useState(""); // Para crear tokens
   const [symbol, setSymbol] = useState(""); // Para crear tokens
   const [initialSupply, setInitialSupply] = useState(""); // Para crear tokens
@@ -39,17 +39,27 @@ function App() {
 
   // Verificar si el usuario es administrador
   const verifyAdmin = async (address) => {
-    const adminStatus = await isAdmin(address, FACTORY_ADDRESS);
-    setIsCreator(adminStatus);
+    try {
+      setMessage("Verificando si el usuario es administrador...");
+      const adminStatus = await isAdmin(address, FACTORY_ADDRESS);
+      setIsCreator(adminStatus);
+      setMessage("");
+    } catch (error) {
+      console.error("Error al verificar si el usuario es administrador:", error);
+      setMessage("Error al verificar el rol de administrador.");
+    }
   };
 
   // Obtener tokens creados
   const fetchTokens = async () => {
     try {
+      setMessage("Obteniendo tokens creados...");
       const createdTokens = await getCreatedTokens();
       setTokens(createdTokens);
+      setMessage("");
     } catch (error) {
       console.error("Error al obtener los tokens creados:", error);
+      setMessage("Error al obtener los tokens creados.");
     }
   };
 
@@ -60,8 +70,10 @@ function App() {
         setMessage("Selecciona un token para consultar su balance.");
         return;
       }
+      setMessage("Consultando balance...");
       const balance = await getTokenBalance(selectedToken, walletAddress);
       setTokenBalance(balance);
+      setMessage("");
     } catch (error) {
       console.error("Error al consultar el balance:", error);
       setMessage("Error al consultar el balance.");
@@ -144,43 +156,11 @@ function App() {
     }
   };
 
-  // Vista del creador
-  const CreatorView = () => (
-    <div>
-      <h2 style={{ color: "gold" }}>Crear Nuevo Token</h2>
-      <input
-        type="text"
-        placeholder="Nombre del Token"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        style={{ margin: "0.5rem", padding: "0.3rem" }}
-      />
-      <input
-        type="text"
-        placeholder="Símbolo del Token"
-        value={symbol}
-        onChange={(e) => setSymbol(e.target.value)}
-        style={{ margin: "0.5rem", padding: "0.3rem" }}
-      />
-      <input
-        type="number"
-        placeholder="Suministro Inicial"
-        value={initialSupply}
-        onChange={(e) => setInitialSupply(e.target.value)}
-        style={{ margin: "0.5rem", padding: "0.3rem" }}
-      />
-      <button
-        onClick={handleCreateToken}
-        style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
-      >
-        Crear Token
-      </button>
-    </div>
-  );
-
   useEffect(() => {
-    fetchTokens();
-  }, []);
+    if (walletAddress) {
+      fetchTokens();
+    }
+  }, [walletAddress]);
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", padding: "2rem", background: "black", color: "white" }}>
@@ -201,24 +181,18 @@ function App() {
       </button>
 
       {isCreator ? (
-        <CreatorView />
+        <div>
+          <h2 style={{ color: "gold" }}>Crear Nuevo Token</h2>
+          <input type="text" placeholder="Nombre del Token" value={name} onChange={(e) => setName(e.target.value)} />
+          <input type="text" placeholder="Símbolo del Token" value={symbol} onChange={(e) => setSymbol(e.target.value)} />
+          <input type="number" placeholder="Suministro Inicial" value={initialSupply} onChange={(e) => setInitialSupply(e.target.value)} />
+          <button onClick={handleCreateToken}>Crear Token</button>
+        </div>
       ) : (
         <div>
-          {/* Vista pública */}
           <h2 style={{ color: "gold" }}>Comprar Tokens</h2>
-          <p>Precio fijo: 1 Token = {TOKEN_PRICE} USDC</p>
-          <input
-            type="number"
-            value={buyAmount}
-            onChange={(e) => setBuyAmount(e.target.value)}
-            style={{ margin: "0.5rem", padding: "0.3rem" }}
-          />
-          <button
-            onClick={handleBuyTokens}
-            style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
-          >
-            Comprar Tokens
-          </button>
+          <input type="number" value={buyAmount} onChange={(e) => setBuyAmount(e.target.value)} />
+          <button onClick={handleBuyTokens}>Comprar Tokens</button>
         </div>
       )}
     </div>
