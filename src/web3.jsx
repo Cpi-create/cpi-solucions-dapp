@@ -24,6 +24,13 @@ const factoryABI = [
     "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "user", "type": "address" }],
+    "name": "isAdmin",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
   }
 ];
 
@@ -172,5 +179,17 @@ export const getTokenTransactions = async (tokenAddress, userAddress) => {
   } catch (error) {
     console.error("Error al obtener el historial de transacciones:", error);
     throw error;
+  }
+};
+
+// Verificar si el usuario es administrador
+export const isAdmin = async (userAddress, factoryAddress) => {
+  try {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
+    return await factoryContract.isAdmin(userAddress);
+  } catch (error) {
+    console.error("Error al verificar administrador:", error);
+    return false;
   }
 };

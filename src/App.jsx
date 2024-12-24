@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createToken, getCreatedTokens, transferTokens, getTokenBalance, buyTokens, getTokenTransactions } from "./web3.jsx";
+import { createToken, getCreatedTokens, transferTokens, getTokenBalance, buyTokens, getTokenTransactions, isAdmin } from "./web3.jsx";
 
 function App() {
   const [walletAddress, setWalletAddress] = useState("");
@@ -11,8 +11,13 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [transferAddress, setTransferAddress] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
+  const [isCreator, setIsCreator] = useState(false); // Estado para la vista del creador
+  const [name, setName] = useState(""); // Para crear tokens
+  const [symbol, setSymbol] = useState(""); // Para crear tokens
+  const [initialSupply, setInitialSupply] = useState(""); // Para crear tokens
 
   const TOKEN_PRICE = 0.05; // Precio fijo: 1 Token = 0.05 USDC
+  const FACTORY_ADDRESS = "0x4A95cEe1C8f20dd3982295271369CA0CE8f5E212"; // Dirección del contrato Factory
 
   // Conectar MetaMask
   const connectWallet = async () => {
@@ -22,6 +27,7 @@ function App() {
         setWalletAddress(accounts[0]);
         setMessage("¡Wallet conectada exitosamente!");
         fetchTokens();
+        verifyAdmin(accounts[0]); // Verificar si es administrador
       } catch (error) {
         console.error("Error al conectar MetaMask:", error);
         setMessage("Error al conectar MetaMask.");
@@ -31,6 +37,12 @@ function App() {
     }
   };
 
+  // Verificar si el usuario es administrador
+  const verifyAdmin = async (address) => {
+    const adminStatus = await isAdmin(address, FACTORY_ADDRESS);
+    setIsCreator(adminStatus);
+  };
+
   // Obtener tokens creados
   const fetchTokens = async () => {
     try {
@@ -38,6 +50,21 @@ function App() {
       setTokens(createdTokens);
     } catch (error) {
       console.error("Error al obtener los tokens creados:", error);
+    }
+  };
+
+  // Consultar balance
+  const checkBalance = async () => {
+    try {
+      if (!selectedToken) {
+        setMessage("Selecciona un token para consultar su balance.");
+        return;
+      }
+      const balance = await getTokenBalance(selectedToken, walletAddress);
+      setTokenBalance(balance);
+    } catch (error) {
+      console.error("Error al consultar el balance:", error);
+      setMessage("Error al consultar el balance.");
     }
   };
 
@@ -89,21 +116,6 @@ function App() {
     }
   };
 
-  // Consultar balance
-  const checkBalance = async () => {
-    try {
-      if (!selectedToken) {
-        setMessage("Selecciona un token para consultar su balance.");
-        return;
-      }
-      const balance = await getTokenBalance(selectedToken, walletAddress);
-      setTokenBalance(balance);
-    } catch (error) {
-      console.error("Error al consultar el balance:", error);
-      setMessage("Error al consultar el balance.");
-    }
-  };
-
   // Obtener historial de transacciones
   const fetchTransactions = async () => {
     try {
@@ -119,29 +131,68 @@ function App() {
     }
   };
 
-  // Cargar tokens al inicio
+  // Crear tokens (solo para el creador)
+  const handleCreateToken = async () => {
+    try {
+      setMessage("Creando token...");
+      const txHash = await createToken(name, symbol, walletAddress, "<USDC_CONTRACT_ADDRESS>", initialSupply);
+      setMessage(`¡Token creado! Hash de la transacción: ${txHash}`);
+      fetchTokens(); // Actualizar lista de tokens
+    } catch (error) {
+      console.error("Error al crear token:", error);
+      setMessage("Error al crear token.");
+    }
+  };
+
+  // Vista del creador
+  const CreatorView = () => (
+    <div>
+      <h2 style={{ color: "gold" }}>Crear Nuevo Token</h2>
+      <input
+        type="text"
+        placeholder="Nombre del Token"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        style={{ margin: "0.5rem", padding: "0.3rem" }}
+      />
+      <input
+        type="text"
+        placeholder="Símbolo del Token"
+        value={symbol}
+        onChange={(e) => setSymbol(e.target.value)}
+        style={{ margin: "0.5rem", padding: "0.3rem" }}
+      />
+      <input
+        type="number"
+        placeholder="Suministro Inicial"
+        value={initialSupply}
+        onChange={(e) => setInitialSupply(e.target.value)}
+        style={{ margin: "0.5rem", padding: "0.3rem" }}
+      />
+      <button
+        onClick={handleCreateToken}
+        style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
+      >
+        Crear Token
+      </button>
+    </div>
+  );
+
   useEffect(() => {
     fetchTokens();
   }, []);
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", padding: "2rem", background: "black", color: "white" }}>
-      {/* Encabezado con logo */}
       <div style={{ marginBottom: "2rem" }}>
         <img
           src="/sfi-logo.jpeg"
           alt="Logo de SFI"
-          style={{
-            height: "120px",
-            borderRadius: "10px",
-            boxShadow: "0px 4px 10px rgba(255, 215, 0, 0.5)",
-            marginBottom: "1rem"
-          }}
+          style={{ height: "120px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(255, 215, 0, 0.5)" }}
         />
         <h1 style={{ color: "gold", marginTop: "1rem" }}>¡Bienvenido a CPI Financial DApp!</h1>
       </div>
 
-      {/* Conectar Wallet */}
       <button
         onClick={connectWallet}
         style={{ marginBottom: "1rem", padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
@@ -149,83 +200,25 @@ function App() {
         {walletAddress ? `Wallet Conectada: ${walletAddress}` : "Conectar Wallet"}
       </button>
 
-      {/* Comprar Tokens */}
-      <h2 style={{ color: "gold" }}>Comprar Tokens</h2>
-      <p>Precio fijo: 1 Token = {TOKEN_PRICE} USDC</p>
-      <div>
-        <input
-          type="number"
-          value={buyAmount}
-          onChange={(e) => setBuyAmount(e.target.value)}
-          style={{ margin: "0.5rem", padding: "0.3rem" }}
-        />
-        <button
-          onClick={handleBuyTokens}
-          style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
-        >
-          Comprar Tokens
-        </button>
-      </div>
-      <p>{message}</p>
-
-      {/* Lista de Tokens */}
-      <h2 style={{ color: "gold" }}>Selecciona un token:</h2>
-      <ul>
-        {tokens.map((token, index) => (
-          <li key={index}>
-            {token}{" "}
-            <button
-              onClick={() => setSelectedToken(token)}
-              style={{
-                background: selectedToken === token ? "limegreen" : "gray",
-                color: "white",
-                border: "none",
-                borderRadius: "3px",
-                padding: "0.3rem",
-              }}
-            >
-              {selectedToken === token ? "Seleccionado ✅" : "Seleccionar"}
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      {/* Operaciones */}
-      {selectedToken && (
+      {isCreator ? (
+        <CreatorView />
+      ) : (
         <div>
-          <h2 style={{ color: "gold" }}>Operaciones con el token seleccionado</h2>
-          <button onClick={checkBalance} style={{ marginBottom: "1rem" }}>
-            Consultar balance
+          {/* Vista pública */}
+          <h2 style={{ color: "gold" }}>Comprar Tokens</h2>
+          <p>Precio fijo: 1 Token = {TOKEN_PRICE} USDC</p>
+          <input
+            type="number"
+            value={buyAmount}
+            onChange={(e) => setBuyAmount(e.target.value)}
+            style={{ margin: "0.5rem", padding: "0.3rem" }}
+          />
+          <button
+            onClick={handleBuyTokens}
+            style={{ padding: "0.5rem 1rem", background: "gold", border: "none", borderRadius: "5px", color: "black" }}
+          >
+            Comprar Tokens
           </button>
-          <p>Balance: {tokenBalance}</p>
-
-          {/* Transferir Tokens */}
-          <div>
-            <h3>Transferir tokens</h3>
-            <input
-              type="text"
-              placeholder="Dirección de destino"
-              value={transferAddress}
-              onChange={(e) => setTransferAddress(e.target.value)}
-              style={{ margin: "0.5rem" }}
-            />
-            <input
-              type="number"
-              placeholder="Cantidad a transferir"
-              value={transferAmount}
-              onChange={(e) => setTransferAmount(e.target.value)}
-              style={{ margin: "0.5rem" }}
-            />
-            <button onClick={handleTransfer}>Transferir</button>
-          </div>
-
-          {/* Historial */}
-          <h3>Historial de transacciones</h3>
-          <ul>
-            {transactions.map((tx, index) => (
-              <li key={index}>{tx.type}: {tx.amount} tokens - Hash: {tx.hash}</li>
-            ))}
-          </ul>
         </div>
       )}
     </div>
