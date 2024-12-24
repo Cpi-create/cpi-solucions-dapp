@@ -131,7 +131,12 @@ function App() {
         <img
           src="/sfi-logo.jpeg"
           alt="Logo de SFI"
-          style={{ height: "120px", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(255, 215, 0, 0.5)" }}
+          style={{
+            height: "120px",
+            borderRadius: "10px",
+            boxShadow: "0px 4px 10px rgba(255, 215, 0, 0.5)",
+            marginBottom: "1rem"
+          }}
         />
         <h1 style={{ color: "gold", marginTop: "1rem" }}>¡Bienvenido a CPI Financial DApp!</h1>
       </div>
