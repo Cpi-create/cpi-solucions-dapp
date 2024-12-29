@@ -4,7 +4,6 @@ import {
   isAdmin,
   createToken,
   getCreatedTokens,
-  getTokenBalance,
   transferTokens,
   buyTokens,
 } from "./web3";
@@ -13,6 +12,9 @@ const App = () => {
   const [walletAddress, setWalletAddress] = useState("");
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [createdTokens, setCreatedTokens] = useState([]);
+  const [statusMessage, setStatusMessage] = useState("");
+
+  // Datos para crear tokens (solo administrador)
   const [newToken, setNewToken] = useState({
     name: "",
     symbol: "",
@@ -20,25 +22,28 @@ const App = () => {
     usdcToken: "",
     initialSupply: "",
   });
+
+  // Datos para transferir tokens
   const [transferData, setTransferData] = useState({
     tokenAddress: "",
     toAddress: "",
     amount: "",
   });
+
+  // Datos para comprar tokens
   const [buyData, setBuyData] = useState({
     tokenAddress: "",
     amount: "",
     price: "",
   });
 
-  const [statusMessage, setStatusMessage] = useState("");
-
-  // Conectar MetaMask al cargar la página
+  // Conectar MetaMask y verificar privilegios
   useEffect(() => {
     const initConnection = async () => {
       try {
         const address = await connectWallet();
         setWalletAddress(address);
+
         const adminStatus = await isAdmin(address);
         setIsUserAdmin(adminStatus);
 
@@ -53,7 +58,7 @@ const App = () => {
     initConnection();
   }, []);
 
-  // Función para manejar la creación de tokens
+  // Crear token (solo administrador)
   const handleCreateToken = async () => {
     try {
       const { name, symbol, admin, usdcToken, initialSupply } = newToken;
@@ -67,7 +72,7 @@ const App = () => {
       const txHash = await createToken(name, symbol, admin, usdcToken, initialSupply);
       setStatusMessage(`Token creado exitosamente. Hash: ${txHash}`);
 
-      // Actualizar la lista de tokens creados
+      // Actualizar lista de tokens creados
       const tokens = await getCreatedTokens();
       setCreatedTokens(tokens);
     } catch (error) {
@@ -76,7 +81,7 @@ const App = () => {
     }
   };
 
-  // Función para manejar transferencias de tokens
+  // Transferir tokens
   const handleTransferTokens = async () => {
     try {
       const { tokenAddress, toAddress, amount } = transferData;
@@ -95,7 +100,7 @@ const App = () => {
     }
   };
 
-  // Función para manejar la compra de tokens
+  // Comprar tokens
   const handleBuyTokens = async () => {
     try {
       const { tokenAddress, amount, price } = buyData;
@@ -129,7 +134,7 @@ const App = () => {
       {statusMessage && <p style={{ color: "red" }}>{statusMessage}</p>}
 
       {/* Funciones para el administrador */}
-      {isUserAdmin && (
+      {isUserAdmin ? (
         <div>
           <h2>Funciones del Administrador</h2>
           <h3>Crear un Token</h3>
@@ -162,6 +167,10 @@ const App = () => {
           />
           <button onClick={handleCreateToken}>Crear Token</button>
         </div>
+      ) : (
+        <p style={{ color: "red" }}>
+          No se pudo verificar si el usuario es administrador. Acceso limitado.
+        </p>
       )}
 
       {/* Listado de tokens creados */}

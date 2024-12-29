@@ -51,7 +51,7 @@ export const connectWallet = async () => {
     }
 
     console.log("Wallet conectada:", accounts[0]);
-    return accounts[0]; // Retorna la dirección de la wallet conectada
+    return accounts[0];
   } catch (error) {
     console.error("Error al conectar la wallet:", error.message);
     throw error;
@@ -73,7 +73,7 @@ export const isAdmin = async (userAddress) => {
     console.log("¿Es administrador?:", result);
     return result;
   } catch (error) {
-    console.error("Error al verificar administrador:", error);
+    console.error("Error al verificar administrador:", error.message);
     throw new Error("No se pudo verificar si el usuario es administrador. Revisa el contrato.");
   }
 };
@@ -99,7 +99,7 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
     console.log("Token creado exitosamente, hash de transacción:", tx.hash);
     return tx.hash;
   } catch (error) {
-    console.error("Error al crear el token:", error);
+    console.error("Error al crear el token:", error.message);
     throw error;
   }
 };
@@ -112,10 +112,14 @@ export const getCreatedTokens = async () => {
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
 
     const tokens = await factoryContract.getCreatedTokens();
+    if (!Array.isArray(tokens)) {
+      throw new Error("El contrato no devolvió un array válido de tokens.");
+    }
+
     console.log("Tokens creados:", tokens);
     return tokens;
   } catch (error) {
-    console.error("Error al obtener los tokens creados:", error);
+    console.error("Error al obtener los tokens creados:", error.message);
     return [];
   }
 };
@@ -144,7 +148,7 @@ export const getTokenBalance = async (tokenAddress, userAddress) => {
     console.log("Balance obtenido:", ethers.utils.formatUnits(balance, 18));
     return ethers.utils.formatUnits(balance, 18);
   } catch (error) {
-    console.error("Error al obtener el balance del token:", error);
+    console.error("Error al obtener el balance del token:", error.message);
     return "0";
   }
 };
@@ -180,7 +184,7 @@ export const transferTokens = async (tokenAddress, toAddress, amount) => {
     console.log("Transferencia exitosa, hash de transacción:", tx.hash);
     return tx.hash;
   } catch (error) {
-    console.error("Error al transferir tokens:", error);
+    console.error("Error al transferir tokens:", error.message);
     throw error;
   }
 };
@@ -216,12 +220,12 @@ export const buyTokens = async (tokenAddress, amount, price) => {
     console.log("Compra exitosa, hash de transacción:", tx.hash);
     return tx.hash;
   } catch (error) {
-    console.error("Error al comprar tokens:", error);
+    console.error("Error al comprar tokens:", error.message);
     throw error;
   }
 };
 
-// Función para obtener historial de transacciones (simulado)
+// Historial de transacciones (simulación)
 export const getTokenTransactions = async (tokenAddress, userAddress) => {
   try {
     console.log(`Obteniendo historial de transacciones para el token ${tokenAddress} y usuario ${userAddress}...`);
@@ -235,7 +239,7 @@ export const getTokenTransactions = async (tokenAddress, userAddress) => {
     console.log("Historial simulado:", simulatedTransactions);
     return simulatedTransactions;
   } catch (error) {
-    console.error("Error al obtener el historial de transacciones:", error);
+    console.error("Error al obtener el historial de transacciones:", error.message);
     throw error;
   }
 };
