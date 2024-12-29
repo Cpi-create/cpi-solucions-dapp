@@ -35,6 +35,49 @@ const factoryABI = [
   },
 ];
 
+// Función para conectar Metamask y verificar red
+export const connectWallet = async () => {
+  try {
+    if (!window.ethereum) {
+      throw new Error("MetaMask no está instalada. Por favor, instálala para usar esta DApp.");
+    }
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const accounts = await provider.send("eth_requestAccounts", []);
+    const network = await provider.getNetwork();
+
+    if (network.chainId.toString() !== "137") {
+      throw new Error("Por favor, conecta MetaMask a la red de Polygon.");
+    }
+
+    console.log("Wallet conectada:", accounts[0]);
+    return accounts[0]; // Retorna la dirección de la wallet conectada
+  } catch (error) {
+    console.error("Error al conectar la wallet:", error.message);
+    throw error;
+  }
+};
+
+// Función para verificar si el usuario es administrador
+export const isAdmin = async (userAddress) => {
+  try {
+    console.log(`Verificando si el usuario ${userAddress} es administrador...`);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
+
+    if (!ethers.utils.isAddress(userAddress)) {
+      throw new Error("La dirección proporcionada no es válida.");
+    }
+
+    const result = await factoryContract.isAdmin(userAddress);
+    console.log("¿Es administrador?:", result);
+    return result;
+  } catch (error) {
+    console.error("Error al verificar administrador:", error);
+    throw new Error("No se pudo verificar si el usuario es administrador. Revisa el contrato.");
+  }
+};
+
 // Función para crear un token
 export const createToken = async (name, symbol, admin, usdcToken, initialSupply) => {
   try {
@@ -47,17 +90,12 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
       throw new Error("Dirección inválida para admin o USDC.");
     }
 
-    console.log(`Parámetros recibidos: name=${name}, symbol=${symbol}, admin=${admin}, usdcToken=${usdcToken}, initialSupply=${initialSupply}`);
-
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, signer);
 
-    console.log("Enviando transacción para crear el token...");
     const tx = await factoryContract.createToken(name, symbol, admin, usdcToken, initialSupply);
-    console.log("Esperando confirmación de la transacción...");
     await tx.wait();
-
     console.log("Token creado exitosamente, hash de transacción:", tx.hash);
     return tx.hash;
   } catch (error) {
@@ -171,11 +209,10 @@ export const buyTokens = async (tokenAddress, amount, price) => {
     ];
 
     const usdcContract = new ethers.Contract(usdcAddress, usdcABI, signer);
-    const totalCost = ethers.utils.parseUnits((amount * price).toString(), 6); // USDC usa 6 decimales
+    const totalCost = ethers.utils.parseUnits((amount * price).toString(), 6);
 
     const tx = await usdcContract.transfer(tokenAddress, totalCost);
     await tx.wait();
-
     console.log("Compra exitosa, hash de transacción:", tx.hash);
     return tx.hash;
   } catch (error) {
@@ -200,20 +237,5 @@ export const getTokenTransactions = async (tokenAddress, userAddress) => {
   } catch (error) {
     console.error("Error al obtener el historial de transacciones:", error);
     throw error;
-  }
-};
-
-// Función para verificar si el usuario es administrador
-export const isAdmin = async (userAddress) => {
-  try {
-    console.log(`Verificando si el usuario ${userAddress} es administrador...`);
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
-    const result = await factoryContract.isAdmin(userAddress);
-    console.log("¿Es administrador?", result);
-    return result;
-  } catch (error) {
-    console.error("Error al verificar administrador:", error);
-    return false;
   }
 };
