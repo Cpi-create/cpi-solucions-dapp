@@ -38,17 +38,26 @@ const factoryABI = [
 // Función para crear un token
 export const createToken = async (name, symbol, admin, usdcToken, initialSupply) => {
   try {
-    console.log("Creando token...");
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const factoryContract = new ethers.Contract(factoryAddress, factoryABI, signer);
+    console.log("Iniciando la creación de un token...");
+    if (!name || !symbol || !admin || !usdcToken || !initialSupply) {
+      throw new Error("Todos los parámetros son obligatorios.");
+    }
 
     if (!ethers.utils.isAddress(admin) || !ethers.utils.isAddress(usdcToken)) {
       throw new Error("Dirección inválida para admin o USDC.");
     }
 
+    console.log(`Parámetros recibidos: name=${name}, symbol=${symbol}, admin=${admin}, usdcToken=${usdcToken}, initialSupply=${initialSupply}`);
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const factoryContract = new ethers.Contract(factoryAddress, factoryABI, signer);
+
+    console.log("Enviando transacción para crear el token...");
     const tx = await factoryContract.createToken(name, symbol, admin, usdcToken, initialSupply);
+    console.log("Esperando confirmación de la transacción...");
     await tx.wait();
+
     console.log("Token creado exitosamente, hash de transacción:", tx.hash);
     return tx.hash;
   } catch (error) {
