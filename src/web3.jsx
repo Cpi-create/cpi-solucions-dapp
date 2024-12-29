@@ -4,37 +4,38 @@ import { ethers } from "ethers";
 const factoryAddress = "0x4A95cEe1C8f20dd3982295271369CA0CE8f5E212"; // Dirección del contrato Factory
 const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Dirección del contrato USDC en Polygon
 
+// ABI del contrato Factory
 const factoryABI = [
   {
-    "inputs": [
-      { "internalType": "string", "name": "name", "type": "string" },
-      { "internalType": "string", "name": "symbol", "type": "string" },
-      { "internalType": "address", "name": "admin", "type": "address" },
-      { "internalType": "address", "name": "usdcToken", "type": "address" },
-      { "internalType": "uint256", "name": "initialSupply", "type": "uint256" }
+    inputs: [
+      { internalType: "string", name: "name", type: "string" },
+      { internalType: "string", name: "symbol", type: "string" },
+      { internalType: "address", name: "admin", type: "address" },
+      { internalType: "address", name: "usdcToken", type: "address" },
+      { internalType: "uint256", name: "initialSupply", type: "uint256" },
     ],
-    "name": "createToken",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "createToken",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "getCreatedTokens",
-    "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }],
-    "stateMutability": "view",
-    "type": "function"
+    inputs: [],
+    name: "getCreatedTokens",
+    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [{ "internalType": "address", "name": "user", "type": "address" }],
-    "name": "isAdmin",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  }
+    inputs: [{ internalType: "address", name: "user", type: "address" }],
+    name: "isAdmin",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ];
 
-// Crear un token
+// Función para crear un token
 export const createToken = async (name, symbol, admin, usdcToken, initialSupply) => {
   try {
     console.log("Creando token...");
@@ -56,7 +57,7 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
   }
 };
 
-// Obtener tokens creados
+// Función para obtener tokens creados
 export const getCreatedTokens = async () => {
   try {
     console.log("Obteniendo tokens creados...");
@@ -72,7 +73,7 @@ export const getCreatedTokens = async () => {
   }
 };
 
-// Consultar balance de un token
+// Función para consultar balance de un token
 export const getTokenBalance = async (tokenAddress, userAddress) => {
   try {
     console.log(`Consultando balance de ${userAddress} en el token ${tokenAddress}...`);
@@ -83,12 +84,12 @@ export const getTokenBalance = async (tokenAddress, userAddress) => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const tokenABI = [
       {
-        "constant": true,
-        "inputs": [{ "name": "owner", "type": "address" }],
-        "name": "balanceOf",
-        "outputs": [{ "name": "balance", "type": "uint256" }],
-        "type": "function"
-      }
+        constant: true,
+        inputs: [{ name: "owner", type: "address" }],
+        name: "balanceOf",
+        outputs: [{ name: "balance", type: "uint256" }],
+        type: "function",
+      },
     ];
 
     const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
@@ -101,7 +102,7 @@ export const getTokenBalance = async (tokenAddress, userAddress) => {
   }
 };
 
-// Transferir tokens
+// Función para transferir tokens
 export const transferTokens = async (tokenAddress, toAddress, amount) => {
   try {
     console.log(`Transfiriendo ${amount} tokens desde ${tokenAddress} a ${toAddress}...`);
@@ -113,15 +114,15 @@ export const transferTokens = async (tokenAddress, toAddress, amount) => {
     const signer = provider.getSigner();
     const tokenABI = [
       {
-        "constant": false,
-        "inputs": [
-          { "name": "to", "type": "address" },
-          { "name": "value", "type": "uint256" }
+        constant: false,
+        inputs: [
+          { name: "to", type: "address" },
+          { name: "value", type: "uint256" },
         ],
-        "name": "transfer",
-        "outputs": [{ "name": "", "type": "bool" }],
-        "type": "function"
-      }
+        name: "transfer",
+        outputs: [{ name: "", type: "bool" }],
+        type: "function",
+      },
     ];
 
     const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
@@ -137,7 +138,7 @@ export const transferTokens = async (tokenAddress, toAddress, amount) => {
   }
 };
 
-// Comprar tokens
+// Función para comprar tokens
 export const buyTokens = async (tokenAddress, amount, price) => {
   try {
     console.log(`Comprando ${amount} tokens a un precio de ${price} USDC por token...`);
@@ -149,15 +150,15 @@ export const buyTokens = async (tokenAddress, amount, price) => {
     const signer = provider.getSigner();
     const usdcABI = [
       {
-        "constant": false,
-        "inputs": [
-          { "name": "recipient", "type": "address" },
-          { "name": "amount", "type": "uint256" }
+        constant: false,
+        inputs: [
+          { name: "recipient", type: "address" },
+          { name: "amount", type: "uint256" },
         ],
-        "name": "transfer",
-        "outputs": [{ "name": "", "type": "bool" }],
-        "type": "function"
-      }
+        name: "transfer",
+        outputs: [{ name: "", type: "bool" }],
+        type: "function",
+      },
     ];
 
     const usdcContract = new ethers.Contract(usdcAddress, usdcABI, signer);
@@ -174,16 +175,15 @@ export const buyTokens = async (tokenAddress, amount, price) => {
   }
 };
 
-// Obtener historial de transacciones
+// Función para obtener historial de transacciones (simulado)
 export const getTokenTransactions = async (tokenAddress, userAddress) => {
   try {
     console.log(`Obteniendo historial de transacciones para el token ${tokenAddress} y usuario ${userAddress}...`);
 
-    // Simulación de historial
     const simulatedTransactions = [
       { type: "Compra", amount: 10, hash: "0x123..." },
       { type: "Transferencia", amount: 5, hash: "0x456..." },
-      { type: "Recepción", amount: 3, hash: "0x789..." }
+      { type: "Recepción", amount: 3, hash: "0x789..." },
     ];
 
     console.log("Historial simulado:", simulatedTransactions);
@@ -194,7 +194,7 @@ export const getTokenTransactions = async (tokenAddress, userAddress) => {
   }
 };
 
-// Verificar si el usuario es administrador
+// Función para verificar si el usuario es administrador
 export const isAdmin = async (userAddress) => {
   try {
     console.log(`Verificando si el usuario ${userAddress} es administrador...`);
