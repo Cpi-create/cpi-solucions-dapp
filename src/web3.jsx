@@ -1,7 +1,8 @@
 import { ethers } from "ethers";
 
 // Dirección del contrato Factory y USDC
-const factoryAddress = "0x4A95cEe1C8f20dd3982295271369CA0CE8f5E212"; // Dirección del contrato Factory
+const factoryAddress = "0xb126fb8453ba9331ebfba556a5570f0afd80ac36e5973123ad0496dd1041d548";
+ // Dirección del contrato Factory
 const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Dirección del contrato USDC en Polygon
 
 // ABI del contrato Factory
