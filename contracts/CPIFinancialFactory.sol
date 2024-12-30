@@ -98,6 +98,7 @@ contract CPIFinancialToken is ERC20, Ownable, AutomationCompatibleInterface {
 
 contract CPIFinancialFactory {
     address[] public createdTokens;
+    mapping(address => bool) public admins; // Mapeo para verificar administradores
 
     event TokenCreated(
         address indexed tokenAddress,
@@ -106,6 +107,10 @@ contract CPIFinancialFactory {
         address admin
     );
 
+    constructor() {
+        admins[msg.sender] = true; // El creador del contrato es el primer administrador
+    }
+
     function createToken(
         string memory name,
         string memory symbol,
@@ -113,6 +118,8 @@ contract CPIFinancialFactory {
         address usdcToken,
         uint256 initialSupply
     ) external returns (address) {
+        require(admins[msg.sender], "Solo un administrador puede crear tokens");
+
         CPIFinancialToken newToken = new CPIFinancialToken(
             name,
             symbol,
@@ -128,5 +135,23 @@ contract CPIFinancialFactory {
 
     function getCreatedTokens() external view returns (address[] memory) {
         return createdTokens;
+    }
+
+    // Nueva función para verificar si un usuario es administrador
+    function isAdmin(address user) external view returns (bool) {
+        return admins[user];
+    }
+
+    // Agregar nuevos administradores
+    function addAdmin(address newAdmin) external {
+        require(admins[msg.sender], "Solo un administrador puede agregar otros administradores");
+        admins[newAdmin] = true;
+    }
+
+    // Eliminar administradores
+    function removeAdmin(address adminToRemove) external {
+        require(admins[msg.sender], "Solo un administrador puede eliminar administradores");
+        require(adminToRemove != msg.sender, "No puedes eliminarte a ti mismo");
+        admins[adminToRemove] = false;
     }
 }
