@@ -14,6 +14,7 @@ const App = () => {
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [createdTokens, setCreatedTokens] = useState([]);
   const [statusMessage, setStatusMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Datos para crear tokens
   const [newToken, setNewToken] = useState({
@@ -45,6 +46,7 @@ const App = () => {
   useEffect(() => {
     const initConnection = async () => {
       try {
+        setIsLoading(true);
         const address = await connectWallet();
         setWalletAddress(address);
 
@@ -53,9 +55,12 @@ const App = () => {
 
         const tokens = await getCreatedTokens();
         setCreatedTokens(tokens);
+        setStatusMessage("");
       } catch (error) {
         console.error("Error al inicializar la conexión:", error.message);
         setStatusMessage("No se pudo conectar correctamente.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -72,6 +77,7 @@ const App = () => {
         return;
       }
 
+      setIsLoading(true);
       setStatusMessage("Creando token...");
       const txHash = await createToken(name, symbol, admin, usdcToken, initialSupply);
       setStatusMessage(`Token creado exitosamente. Hash: ${txHash}`);
@@ -82,6 +88,8 @@ const App = () => {
     } catch (error) {
       console.error("Error al crear el token:", error.message);
       setStatusMessage(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -95,12 +103,15 @@ const App = () => {
         return;
       }
 
+      setIsLoading(true);
       setStatusMessage("Realizando transferencia...");
       const txHash = await transferTokens(tokenAddress, toAddress, amount);
       setStatusMessage(`Transferencia realizada exitosamente. Hash: ${txHash}`);
     } catch (error) {
       console.error("Error al transferir tokens:", error.message);
       setStatusMessage(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -114,18 +125,22 @@ const App = () => {
         return;
       }
 
+      setIsLoading(true);
       setStatusMessage("Realizando compra...");
       const txHash = await buyTokens(tokenAddress, amount, price);
       setStatusMessage(`Compra realizada exitosamente. Hash: ${txHash}`);
     } catch (error) {
       console.error("Error al comprar tokens:", error.message);
       setStatusMessage(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Obtener balance del usuario
   const handleGetBalance = async (tokenAddress) => {
     try {
+      setIsLoading(true);
       setStatusMessage("Consultando balance...");
       const balance = await getTokenBalance(tokenAddress, walletAddress);
       setUserBalance(balance);
@@ -133,12 +148,16 @@ const App = () => {
     } catch (error) {
       console.error("Error al obtener balance:", error.message);
       setStatusMessage(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
       <h1>¡Bienvenido a CPI Financial DApp!</h1>
+
+      {isLoading && <p style={{ color: "blue" }}>Procesando...</p>}
 
       <p>{walletAddress ? `Cartera conectada: ${walletAddress}` : "Conectando a MetaMask..."}</p>
 

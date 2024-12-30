@@ -105,6 +105,10 @@ export const getCreatedTokens = async () => {
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
 
     const tokens = await factoryContract.getCreatedTokens();
+    if (!Array.isArray(tokens)) {
+      throw new Error("El contrato no devolvió un array válido de tokens.");
+    }
+
     console.log("Tokens creados:", tokens);
     return tokens;
   } catch (error) {
