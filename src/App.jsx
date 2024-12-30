@@ -6,6 +6,7 @@ import {
   getCreatedTokens,
   transferTokens,
   buyTokens,
+  getTokenBalance,
 } from "./web3";
 
 const App = () => {
@@ -14,7 +15,7 @@ const App = () => {
   const [createdTokens, setCreatedTokens] = useState([]);
   const [statusMessage, setStatusMessage] = useState("");
 
-  // Datos para crear tokens (solo administrador)
+  // Datos para crear tokens
   const [newToken, setNewToken] = useState({
     name: "",
     symbol: "",
@@ -37,6 +38,9 @@ const App = () => {
     price: "",
   });
 
+  // Balance de tokens
+  const [userBalance, setUserBalance] = useState("");
+
   // Conectar MetaMask y verificar privilegios
   useEffect(() => {
     const initConnection = async () => {
@@ -51,7 +55,7 @@ const App = () => {
         setCreatedTokens(tokens);
       } catch (error) {
         console.error("Error al inicializar la conexión:", error.message);
-        setStatusMessage(error.message);
+        setStatusMessage("No se pudo conectar correctamente.");
       }
     };
 
@@ -119,25 +123,31 @@ const App = () => {
     }
   };
 
+  // Obtener balance del usuario
+  const handleGetBalance = async (tokenAddress) => {
+    try {
+      setStatusMessage("Consultando balance...");
+      const balance = await getTokenBalance(tokenAddress, walletAddress);
+      setUserBalance(balance);
+      setStatusMessage("");
+    } catch (error) {
+      console.error("Error al obtener balance:", error.message);
+      setStatusMessage(`Error: ${error.message}`);
+    }
+  };
+
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
       <h1>¡Bienvenido a CPI Financial DApp!</h1>
 
-      {/* Estado de conexión */}
-      <p>
-        {walletAddress
-          ? `Cartera conectada: ${walletAddress}`
-          : "Conectando a MetaMask..."}
-      </p>
+      <p>{walletAddress ? `Cartera conectada: ${walletAddress}` : "Conectando a MetaMask..."}</p>
 
-      {/* Mensaje de estado */}
       {statusMessage && <p style={{ color: "red" }}>{statusMessage}</p>}
 
-      {/* Funciones para el administrador */}
       {isUserAdmin ? (
         <div>
           <h2>Funciones del Administrador</h2>
-          <h3>Crear un Token</h3>
+          <h3>Crear Token</h3>
           <input
             placeholder="Nombre"
             value={newToken.name}
@@ -161,85 +171,69 @@ const App = () => {
           <input
             placeholder="Supply Inicial"
             value={newToken.initialSupply}
-            onChange={(e) =>
-              setNewToken({ ...newToken, initialSupply: e.target.value })
-            }
+            onChange={(e) => setNewToken({ ...newToken, initialSupply: e.target.value })}
           />
           <button onClick={handleCreateToken}>Crear Token</button>
         </div>
       ) : (
-        <p style={{ color: "red" }}>
-          No se pudo verificar si el usuario es administrador. Acceso limitado.
-        </p>
+        <p style={{ color: "red" }}>Acceso restringido: Solo para administradores.</p>
       )}
 
-      {/* Listado de tokens creados */}
       <div>
         <h2>Tokens Creados</h2>
         {createdTokens.length > 0 ? (
-          <ul>
-            {createdTokens.map((token, index) => (
-              <li key={index}>{token}</li>
-            ))}
-          </ul>
+          createdTokens.map((token, index) => (
+            <div key={index}>
+              <p>{token}</p>
+              <button onClick={() => handleGetBalance(token)}>Consultar Balance</button>
+            </div>
+          ))
         ) : (
           <p>No se han creado tokens aún.</p>
         )}
       </div>
 
-      {/* Función de transferencia */}
       <div>
         <h2>Transferir Tokens</h2>
         <input
           placeholder="Dirección del Token"
           value={transferData.tokenAddress}
-          onChange={(e) =>
-            setTransferData({ ...transferData, tokenAddress: e.target.value })
-          }
+          onChange={(e) => setTransferData({ ...transferData, tokenAddress: e.target.value })}
         />
         <input
           placeholder="Dirección de Destino"
           value={transferData.toAddress}
-          onChange={(e) =>
-            setTransferData({ ...transferData, toAddress: e.target.value })
-          }
+          onChange={(e) => setTransferData({ ...transferData, toAddress: e.target.value })}
         />
         <input
           placeholder="Cantidad"
           value={transferData.amount}
-          onChange={(e) =>
-            setTransferData({ ...transferData, amount: e.target.value })
-          }
+          onChange={(e) => setTransferData({ ...transferData, amount: e.target.value })}
         />
         <button onClick={handleTransferTokens}>Transferir</button>
       </div>
 
-      {/* Función de compra */}
       <div>
         <h2>Comprar Tokens</h2>
         <input
           placeholder="Dirección del Token"
           value={buyData.tokenAddress}
-          onChange={(e) =>
-            setBuyData({ ...buyData, tokenAddress: e.target.value })
-          }
+          onChange={(e) => setBuyData({ ...buyData, tokenAddress: e.target.value })}
         />
         <input
           placeholder="Cantidad"
           value={buyData.amount}
-          onChange={(e) =>
-            setBuyData({ ...buyData, amount: e.target.value })
-          }
+          onChange={(e) => setBuyData({ ...buyData, amount: e.target.value })}
         />
         <input
           placeholder="Precio por Token (USDC)"
           value={buyData.price}
-          onChange={(e) =>
-            setBuyData({ ...buyData, price: e.target.value })
-          }
+          onChange={(e) => setBuyData({ ...buyData, price: e.target.value })}
         />
         <button onClick={handleBuyTokens}>Comprar</button>
       </div>
+
+      {userBalance && <p>Tu balance es: {userBalance}</p>}
     </div>
   );
 };
