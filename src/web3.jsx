@@ -2,7 +2,6 @@ import { ethers } from "ethers";
 
 // Dirección del contrato Factory y USDC
 const factoryAddress = "0xb126fb8453ba9331ebfba556a5570f0afd80ac36e5973123ad0496dd1041d548";
- // Dirección del contrato Factory
 const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Dirección del contrato USDC en Polygon
 
 // ABI del contrato Factory
@@ -36,7 +35,7 @@ const factoryABI = [
   },
 ];
 
-// Función para conectar Metamask y verificar red
+// Función para conectar MetaMask y verificar red
 export const connectWallet = async () => {
   try {
     if (!window.ethereum) {
@@ -59,34 +58,28 @@ export const connectWallet = async () => {
   }
 };
 
-// Función para verificar si el usuario es administrador
+// Verificar si el usuario es administrador
 export const isAdmin = async (userAddress) => {
   try {
-    console.log(`Verificando si el usuario ${userAddress} es administrador...`);
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
-
     if (!ethers.utils.isAddress(userAddress)) {
       throw new Error("La dirección proporcionada no es válida.");
     }
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
 
     const result = await factoryContract.isAdmin(userAddress);
     console.log("¿Es administrador?:", result);
     return result;
   } catch (error) {
     console.error("Error al verificar administrador:", error.message);
-    throw new Error("No se pudo verificar si el usuario es administrador. Revisa el contrato.");
+    throw new Error("No se pudo verificar si el usuario es administrador.");
   }
 };
 
-// Función para crear un token
+// Crear token
 export const createToken = async (name, symbol, admin, usdcToken, initialSupply) => {
   try {
-    console.log("Iniciando la creación de un token...");
-    if (!name || !symbol || !admin || !usdcToken || !initialSupply) {
-      throw new Error("Todos los parámetros son obligatorios.");
-    }
-
     if (!ethers.utils.isAddress(admin) || !ethers.utils.isAddress(usdcToken)) {
       throw new Error("Dirección inválida para admin o USDC.");
     }
@@ -105,18 +98,13 @@ export const createToken = async (name, symbol, admin, usdcToken, initialSupply)
   }
 };
 
-// Función para obtener tokens creados
+// Obtener tokens creados
 export const getCreatedTokens = async () => {
   try {
-    console.log("Obteniendo tokens creados...");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const factoryContract = new ethers.Contract(factoryAddress, factoryABI, provider);
 
     const tokens = await factoryContract.getCreatedTokens();
-    if (!Array.isArray(tokens)) {
-      throw new Error("El contrato no devolvió un array válido de tokens.");
-    }
-
     console.log("Tokens creados:", tokens);
     return tokens;
   } catch (error) {
@@ -125,10 +113,9 @@ export const getCreatedTokens = async () => {
   }
 };
 
-// Función para consultar balance de un token
+// Consultar balance de un token
 export const getTokenBalance = async (tokenAddress, userAddress) => {
   try {
-    console.log(`Consultando balance de ${userAddress} en el token ${tokenAddress}...`);
     if (!ethers.utils.isAddress(tokenAddress) || !ethers.utils.isAddress(userAddress)) {
       throw new Error("Dirección inválida para el token o usuario.");
     }
@@ -154,10 +141,9 @@ export const getTokenBalance = async (tokenAddress, userAddress) => {
   }
 };
 
-// Función para transferir tokens
+// Transferir tokens
 export const transferTokens = async (tokenAddress, toAddress, amount) => {
   try {
-    console.log(`Transfiriendo ${amount} tokens desde ${tokenAddress} a ${toAddress}...`);
     if (!ethers.utils.isAddress(tokenAddress) || !ethers.utils.isAddress(toAddress)) {
       throw new Error("Dirección inválida para el token o destino.");
     }
@@ -190,10 +176,9 @@ export const transferTokens = async (tokenAddress, toAddress, amount) => {
   }
 };
 
-// Función para comprar tokens
+// Comprar tokens
 export const buyTokens = async (tokenAddress, amount, price) => {
   try {
-    console.log(`Comprando ${amount} tokens a un precio de ${price} USDC por token...`);
     if (!ethers.utils.isAddress(tokenAddress)) {
       throw new Error("Dirección de token inválida.");
     }
